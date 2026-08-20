@@ -1,11 +1,82 @@
 'use client';
+
 import { FormEvent, useState } from 'react';
+
+type Message = {
+  role: 'user' | 'assistant';
+  content: string;
+};
+
+const initialMessage: Message = {
+  role: 'assistant',
+  content:
+    'Olá. Este pode ser um espaço para você organizar o que está sentindo. Você pode compartilhar apenas o que se sentir confortável. Como têm sido seus dias?',
+};
+
 export function ChatDemo() {
-  const [notice, setNotice] = useState('');
-  function submit(event: FormEvent<HTMLFormElement>) {
+  const [messages, setMessages] = useState<Message[]>([initialMessage]);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setNotice('Demonstração: o envio será conectado em uma etapa futura.');
+    const content = message.trim();
+    if (!content || isLoading) return;
+
+    const nextMessages: Message[] = [
+      ...messages,
+      { role: 'user', content },
+    ];
+    setMessages(nextMessages);
+    setMessage('');
+    setError('');
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: nextMessages }),
+      });
+      const data: unknown = await response.json();
+
+      if (!response.ok) {
+        const responseError =
+          typeof data === 'object' &&
+          data !== null &&
+          typeof (data as Record<string, unknown>).error === 'string'
+            ? (data as Record<string, string>).error
+            : 'Não foi possível responder agora. Tente novamente.';
+        throw new Error(responseError);
+      }
+
+      if (
+        typeof data !== 'object' ||
+        data === null ||
+        typeof (data as Record<string, unknown>).message !== 'string'
+      ) {
+        throw new Error('A resposta recebida não é válida.');
+      }
+
+      setMessages((current) => [
+        ...current,
+        {
+          role: 'assistant',
+          content: (data as Record<string, string>).message,
+        },
+      ]);
+    } catch (submitError) {
+      setError(
+        submitError instanceof Error
+          ? submitError.message
+          : 'Não foi possível responder agora. Tente novamente.',
+      );
+    } finally {
+      setIsLoading(false);
+    }
   }
+
   return (
     <div className="surface" style={{ marginTop: 28, overflow: 'hidden' }}>
       <div
@@ -20,7 +91,7 @@ export function ChatDemo() {
       >
         <strong>Assistente de acolhimento</strong>
         <span style={{ color: 'var(--muted)', fontSize: '.86rem' }}>
-          ● Demonstração — sem IA conectada
+          ● Conversa com IA
         </span>
       </div>
       <div
@@ -33,34 +104,29 @@ export function ChatDemo() {
           background: '#fdfbf6',
         }}
       >
-        <div
-          style={{
-            maxWidth: 620,
-            padding: '1rem 1.2rem',
-            borderRadius: '20px 20px 20px 4px',
-            background: 'var(--sage)',
-          }}
-        >
-          <strong>
-            Olá. Este pode ser um espaço para você organizar o que está
-            sentindo.
-          </strong>
-          <p style={{ marginBottom: 0 }}>
-            Você pode compartilhar apenas o que se sentir confortável. Como têm
-            sido seus dias?
-          </p>
-        </div>
-        <div
-          style={{
-            alignSelf: 'flex-end',
-            maxWidth: 540,
-            padding: '1rem 1.2rem',
-            borderRadius: '20px 20px 4px 20px',
-            background: '#f2ddcf',
-          }}
-        >
-          Exemplo de resposta do usuário. Este conteúdo é apenas ilustrativo.
-        </div>
+        {messages.map((item, index) => (
+          <div
+            key={`${item.role}-${index}`}
+            style={{
+              alignSelf: item.role === 'user' ? 'flex-end' : 'flex-start',
+              maxWidth: item.role === 'user' ? 540 : 620,
+              padding: '1rem 1.2rem',
+              borderRadius:
+                item.role === 'user'
+                  ? '20px 20px 4px 20px'
+                  : '20px 20px 20px 4px',
+              background: item.role === 'user' ? '#f2ddcf' : 'var(--sage)',
+              whiteSpace: 'pre-wrap',
+            }}
+          >
+            {item.content}
+          </div>
+        ))}
+        {isLoading && (
+          <div style={{ color: 'var(--muted)' }} role="status">
+            Preparando uma resposta acolhedora…
+          </div>
+        )}
       </div>
       <form
         onSubmit={submit}
@@ -75,6 +141,9 @@ export function ChatDemo() {
         <div style={{ display: 'flex', gap: 10, alignItems: 'end' }}>
           <textarea
             id="message"
+            value={message}
+            onChange={(event) => setMessage(event.target.value)}
+            disabled={isLoading}
             rows={2}
             placeholder="Escreva no seu ritmo…"
             style={{
@@ -86,20 +155,28 @@ export function ChatDemo() {
               background: 'white',
             }}
           />
-          <button className="button" type="submit">
-            Enviar
+          <button
+            className="button"
+            type="submit"
+            disabled={isLoading || !message.trim()}
+          >
+            {isLoading ? 'Enviando…' : 'Enviar'}
           </button>
         </div>
         <p
           aria-live="polite"
           style={{
-            color: 'var(--green)',
+            color: '#9d2b2b',
             minHeight: 24,
             margin: '8px 0 0',
             fontSize: '.9rem',
           }}
         >
-          {notice}
+          {error}
+        </p>
+        <p style={{ color: 'var(--muted)', margin: '4px 0 0', fontSize: '.82rem' }}>
+          Este assistente não substitui atendimento profissional. Em risco
+          imediato, procure o SAMU (192), uma emergência local ou o CVV (188).
         </p>
       </form>
     </div>

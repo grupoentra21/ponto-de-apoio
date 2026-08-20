@@ -5,7 +5,7 @@ Fundação técnica de uma plataforma para acolhimento inicial e encaminhamento 
 ## Estado desta etapa
 
 - Landing page responsiva.
-- Chat demonstrativo sem API de IA nem persistência.
+- Chat de acolhimento integrado à OpenAI, sem persistência no Ponto de Apoio.
 - Catálogo com perfis explicitamente fictícios.
 - Clientes Supabase para navegador e servidor.
 - Migration PostgreSQL relacional com RLS e políticas iniciais.
@@ -27,6 +27,15 @@ As telas funcionam sem Supabase configurado. Para integrar dados, preencha sem v
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 ```
+
+Para habilitar o chat, adicione a chave da OpenAI ao `.env.local`:
+
+```env
+OPENAI_API_KEY=sk-exemplo
+```
+
+A chave é lida apenas pelo endpoint no servidor e nunca deve usar o prefixo
+`NEXT_PUBLIC_`. Reinicie `npm run dev` depois de criar ou alterar o arquivo.
 
 Nunca adicione chaves reais ao Git. Chaves de serviço nunca devem chegar ao navegador.
 
@@ -71,7 +80,7 @@ Importe o repositório na Vercel, configure as variáveis por ambiente e use o b
 1. Definir privacidade, consentimento e protocolo para situações de risco com especialistas responsáveis.
 2. Configurar autenticação e criação segura de perfis.
 3. Criar painel e processo de verificação de profissionais.
-4. Integrar assistente com limites claros, avaliação de segurança e encaminhamento — sem diagnóstico.
+4. Evoluir o assistente com avaliação de segurança e encaminhamento — sem diagnóstico.
 5. Adicionar testes, auditoria de acessibilidade e monitoramento.
 
 Em risco imediato, procure o SAMU (192), uma emergência local ou o CVV (188). Valide a disponibilidade dos serviços para cada região atendida.
