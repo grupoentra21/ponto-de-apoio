@@ -8,12 +8,16 @@ Fundação técnica de uma plataforma para acolhimento inicial e encaminhamento 
 - Chat demonstrativo sem API de IA nem persistência.
 - Catálogo com perfis explicitamente fictícios.
 - Clientes Supabase para navegador e servidor.
-- Migration PostgreSQL relacional com RLS e políticas iniciais.
+- Autenticação por e-mail e senha para psicólogos.
+- Área profissional para envio do cadastro à verificação.
+- Área administrativa para aprovar, suspender, restaurar ou excluir cadastros.
+- Catálogo público alimentado somente por perfis aprovados no PostgreSQL.
+- Migration PostgreSQL relacional com RLS e auditoria administrativa.
 - TypeScript estrito, ESLint, Prettier e preparação para Vercel.
 
 ## Executar localmente
 
-Requisitos: Node.js 20.9 ou superior e npm.
+Requisitos: Node.js 22 ou superior e npm.
 
 ```bash
 npm install
@@ -26,6 +30,7 @@ As telas funcionam sem Supabase configurado. Para integrar dados, preencha sem v
 ```env
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
 Encontre ambos em **Connect** no projeto Supabase. A URL e a chave
@@ -49,9 +54,19 @@ ausente, indisponibilidade ou schema ainda não aplicado retorna `503` sem expor
 detalhes do banco. O endpoint roda somente no servidor e faz uma consulta sem
 retornar linhas da tabela `specialties`.
 
-## Banco de dados
+## Banco de dados e primeiro administrador
 
-A migration em `supabase/migrations/20260819000000_initial_schema.sql` cria `profiles`, `professionals`, `specialties`, a relação N:N `professional_specialties`, `conversations` e `messages`. Todas têm RLS habilitado. Somente especialidades e profissionais publicados são públicos; perfil e conversas ficam restritos ao próprio usuário.
+A migration em `supabase/migrations/20260819000000_initial_schema.sql` cria os perfis, cadastros profissionais e a trilha de auditoria. O catálogo só lê profissionais aprovados e publicados. O papel administrativo não pode ser escolhido no cadastro público.
+
+Depois de criar uma conta normalmente, promova somente a conta da pessoa responsável pelo painel usando o SQL Editor do Supabase:
+
+```sql
+update public.profiles
+set role = 'admin', updated_at = now()
+where id = (select id from auth.users where email = 'ADMIN@EXEMPLO.COM');
+```
+
+Em **Authentication → URL Configuration**, defina a URL de produção e adicione `https://SEU-DOMINIO/auth/callback` às URLs de redirecionamento. Mantenha a confirmação de e-mail habilitada.
 
 Antes de produção, revise papéis administrativos, verificação profissional, consentimento, retenção e exclusão de conteúdo sensível.
 

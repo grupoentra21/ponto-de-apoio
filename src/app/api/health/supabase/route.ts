@@ -7,7 +7,7 @@ export async function GET() {
   try {
     const supabase = await createClient();
     const { error } = await supabase
-      .from('specialties')
+      .from('professionals')
       .select('id', { count: 'exact', head: true });
 
     if (error) {

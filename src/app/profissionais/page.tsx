@@ -1,10 +1,38 @@
 import type { Metadata } from 'next';
-import { mockProfessionals } from '@/lib/mocks/professionals';
-export const metadata: Metadata = { title: 'Profissionais' };
-export default function ProfissionaisPage() {
+import { createClient } from '@/lib/supabase/server';
+export const metadata: Metadata = { title: 'Profissionais verificados' };
+type PublicProfessional = {
+  id: string;
+  registration_number: string;
+  registration_region: string;
+  bio: string | null;
+  service_mode: string;
+  city: string | null;
+  state: string | null;
+  contact_email: string | null;
+  profiles: { full_name: string } | null;
+};
+export default async function ProfissionaisPage() {
+  let rows: PublicProfessional[] = [];
+  let unavailable = false;
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from('professionals')
+      .select(
+        'id,registration_number,registration_region,bio,service_mode,city,state,contact_email,profiles!professionals_profile_id_fkey(full_name)',
+      )
+      .eq('status', 'approved')
+      .eq('is_published', true)
+      .order('created_at');
+    if (error) unavailable = true;
+    else rows = (data ?? []) as unknown as PublicProfessional[];
+  } catch {
+    unavailable = true;
+  }
   return (
     <section className="container" style={{ padding: '3rem 0' }}>
-      <p className="eyebrow">Catálogo inicial</p>
+      <p className="eyebrow">Catálogo verificado</p>
       <h1
         style={{
           fontFamily: 'Georgia,serif',
@@ -14,81 +42,56 @@ export default function ProfissionaisPage() {
       >
         Encontre apoio profissional
       </h1>
-      <div
-        role="note"
-        style={{
-          padding: '1rem 1.2rem',
-          margin: '1.5rem 0 2rem',
-          borderRadius: 14,
-          background: '#f2ddcf',
-          color: '#653b2d',
-        }}
-      >
-        <strong>Perfis demonstrativos:</strong> nomes, registros e informações
-        abaixo são fictícios e não representam profissionais reais.
-      </div>
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))',
-          gap: 20,
-        }}
-      >
-        {mockProfessionals.map((p) => (
-          <article className="surface" key={p.id} style={{ padding: 24 }}>
-            <div
-              aria-hidden="true"
-              style={{
-                width: 58,
-                height: 58,
-                borderRadius: '50%',
-                background: 'var(--sage)',
-                display: 'grid',
-                placeItems: 'center',
-                fontFamily: 'Georgia,serif',
-                fontSize: '1.4rem',
-              }}
-            >
-              {p.name
+      <p style={{ color: 'var(--muted)', maxWidth: 720 }}>
+        Os perfis abaixo passaram pela verificação administrativa da plataforma.
+        Confirme sempre a situação atual do registro junto ao Conselho Regional
+        de Psicologia.
+      </p>
+      {unavailable && (
+        <p className="form-alert error">
+          O catálogo está temporariamente indisponível.
+        </p>
+      )}
+      {!unavailable && rows.length === 0 && (
+        <div className="surface empty-state">
+          <h2>Novos profissionais em breve</h2>
+          <p>
+            A equipe está verificando os primeiros cadastros antes de
+            publicá-los.
+          </p>
+        </div>
+      )}
+      <div className="catalog-grid">
+        {rows.map((p) => (
+          <article className="surface professional-card" key={p.id}>
+            <div className="avatar" aria-hidden>
+              {(p.profiles?.full_name ?? 'P')
                 .split(' ')
-                .map((part) => part[0])
+                .slice(0, 2)
+                .map((n) => n[0])
                 .join('')}
             </div>
-            <h2 style={{ fontFamily: 'Georgia,serif', marginBottom: 0 }}>
-              {p.name}
-            </h2>
-            <p style={{ color: 'var(--muted)', marginTop: 2 }}>
-              {p.profession} · {p.registration}
+            <h2>{p.profiles?.full_name}</h2>
+            <p className="muted">
+              Psicólogo(a) · {p.registration_region} {p.registration_number}
             </p>
-            <div
-              style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: 8,
-                margin: '1rem 0',
-              }}
-            >
-              {p.specialties.map((s) => (
-                <span
-                  key={s}
-                  style={{
-                    padding: '.3rem .65rem',
-                    background: 'var(--sage)',
-                    borderRadius: 999,
-                    fontSize: '.82rem',
-                  }}
-                >
-                  {s}
-                </span>
-              ))}
-            </div>
             <p>{p.bio}</p>
-            <p style={{ color: 'var(--muted)', fontSize: '.9rem' }}>
-              {p.serviceMode} · {p.city}
+            <p className="muted">
+              {p.service_mode === 'online'
+                ? 'Online'
+                : p.service_mode === 'in_person'
+                  ? 'Presencial'
+                  : 'Online e presencial'}
+              {p.city ? ` · ${p.city}/${p.state}` : ''}
             </p>
-            <button className="button secondary" type="button" disabled>
-              Ver perfil em breve
-            </button>
+            {p.contact_email && (
+              <a
+                className="button secondary"
+                href={`mailto:${p.contact_email}`}
+              >
+                Solicitar contato
+              </a>
+            )}
           </article>
         ))}
       </div>
