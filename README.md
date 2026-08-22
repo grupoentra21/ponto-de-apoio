@@ -2,6 +2,14 @@
 
 Fundação técnica de uma plataforma para acolhimento inicial e encaminhamento a profissionais de saúde mental. A aplicação não diagnostica, não substitui profissionais e não apresenta o assistente como serviço clínico.
 
+## Documentação
+
+- [Visão geral, fluxos e estado dos ambientes](docs/SYSTEM_OVERVIEW.md)
+- [Modelo PostgreSQL, RLS e segurança](docs/DATABASE_AND_SECURITY.md)
+- [Implantação e operação administrativa](docs/OPERATIONS.md)
+
+> **Estado de publicação:** a área administrativa e o cadastro profissional estão implementados no commit local `8c3e28f`, mas ainda não estão em produção. O push para a organização está bloqueado até que a credencial Git possua permissão de escrita, e a migration ainda precisa ser aplicada ao Supabase.
+
 ## Estado desta etapa
 
 - Landing page responsiva.
