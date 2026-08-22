@@ -24,10 +24,7 @@ export function ChatDemo() {
     const content = message.trim();
     if (!content || isLoading) return;
 
-    const nextMessages: Message[] = [
-      ...messages,
-      { role: 'user', content },
-    ];
+    const nextMessages: Message[] = [...messages, { role: 'user', content }];
     setMessages(nextMessages);
     setMessage('');
     setError('');
@@ -174,7 +171,13 @@ export function ChatDemo() {
         >
           {error}
         </p>
-        <p style={{ color: 'var(--muted)', margin: '4px 0 0', fontSize: '.82rem' }}>
+        <p
+          style={{
+            color: 'var(--muted)',
+            margin: '4px 0 0',
+            fontSize: '.82rem',
+          }}
+        >
           Este assistente não substitui atendimento profissional. Em risco
           imediato, procure o SAMU (192), uma emergência local ou o CVV (188).
         </p>
