@@ -4,26 +4,30 @@
 
 O Ponto de Apoio está sendo preparado como um catálogo de psicólogos verificados. A plataforma permite que profissionais criem uma conta, enviem dados profissionais para análise e sejam publicados somente depois de uma decisão administrativa.
 
-O produto não presta atendimento psicológico, não emite diagnóstico e não é um serviço de emergência. A tela de acolhimento existente é somente uma demonstração visual: não existe integração ativa com IA, envio ou armazenamento de mensagens.
+A identidade visual fica versionada em `public/brand/`: a marca verde é usada em superfícies claras, a marca branca fica disponível para superfícies escuras e o símbolo isolado atende favicon e atalhos da aplicação.
+
+O produto não presta atendimento psicológico, não emite diagnóstico e não é um serviço de emergência. A tela de acolhimento usa a OpenAI para orientação inicial com limites explícitos; a chave permanece no servidor e as mensagens não são persistidas pelo Ponto de Apoio.
 
 ## Estado por ambiente
 
-### Código local (`main`, commit `8c3e28f`)
+### Branch `codex/admin-portal-production`
 
 - autenticação de psicólogos implementada;
 - painel administrativo implementado;
 - área profissional implementada;
 - catálogo conectado ao Supabase implementado;
+- chat OpenAI preservado e executado somente por `/api/chat`;
+- identidade visual oficial aplicada;
 - migration PostgreSQL e RLS preparadas;
 - lint, formatação, TypeScript e build aprovados.
 
-### Produção verificada em 22/08/2026
+### Produção antes do merge desta branch
 
 - `https://ponto-de-apoio.vercel.app/`: disponível;
 - `/admin`: ainda retorna 404;
 - `/cadastro-profissional`: ainda retorna 404;
 - `/api/health/supabase`: retorna 503 porque o schema ainda não foi aplicado;
-- o commit local ainda não chegou ao GitHub porque a credencial Git disponível não possui escrita no repositório da organização.
+- a branch administrativa já está no GitHub e aguarda PR, migration e validação final.
 
 ## Perfis de acesso
 
@@ -62,17 +66,18 @@ Para um profissional que não pode mais atuar, a ação recomendada é **suspend
 
 ## Rotas da aplicação
 
-| Rota                     | Finalidade                                       | Acesso          |
-| ------------------------ | ------------------------------------------------ | --------------- |
-| `/`                      | Página institucional                             | Público         |
-| `/acolhimento`           | Demonstração visual sem IA                       | Público         |
-| `/profissionais`         | Catálogo vindo do PostgreSQL                     | Público         |
-| `/cadastro-profissional` | Criação de conta                                 | Público         |
-| `/entrar`                | Login                                            | Público         |
-| `/auth/callback`         | Troca segura do código de confirmação por sessão | Público/técnico |
-| `/area-profissional`     | Cadastro e status do próprio psicólogo           | Autenticado     |
-| `/admin`                 | Operação do catálogo                             | Administrador   |
-| `/api/health/supabase`   | Verificação sem retorno de dados                 | Servidor        |
+| Rota                     | Finalidade                                             | Acesso          |
+| ------------------------ | ------------------------------------------------------ | --------------- |
+| `/`                      | Página institucional                                   | Público         |
+| `/acolhimento`           | Acolhimento inicial assistido por IA, sem persistência | Público         |
+| `/profissionais`         | Catálogo vindo do PostgreSQL                           | Público         |
+| `/cadastro-profissional` | Criação de conta                                       | Público         |
+| `/entrar`                | Login                                                  | Público         |
+| `/auth/callback`         | Troca segura do código de confirmação por sessão       | Público/técnico |
+| `/area-profissional`     | Cadastro e status do próprio psicólogo                 | Autenticado     |
+| `/admin`                 | Operação do catálogo                                   | Administrador   |
+| `/api/health/supabase`   | Verificação sem retorno de dados                       | Servidor        |
+| `/api/chat`              | Proxy servidor para a OpenAI                           | Servidor        |
 
 ## Arquitetura
 

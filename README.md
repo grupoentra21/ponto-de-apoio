@@ -8,18 +8,19 @@ Fundação técnica de uma plataforma para acolhimento inicial e encaminhamento 
 - [Modelo PostgreSQL, RLS e segurança](docs/DATABASE_AND_SECURITY.md)
 - [Implantação e operação administrativa](docs/OPERATIONS.md)
 
-> **Estado de publicação:** a área administrativa e o cadastro profissional estão implementados no commit local `8c3e28f`, mas ainda não estão em produção. O push para a organização está bloqueado até que a credencial Git possua permissão de escrita, e a migration ainda precisa ser aplicada ao Supabase.
+> **Estado de publicação:** a área administrativa e o cadastro profissional estão na branch `codex/admin-portal-production`. A migration ainda precisa ser aplicada ao Supabase antes do merge e da liberação completa em produção.
 
 ## Estado desta etapa
 
 - Landing page responsiva.
-- Chat demonstrativo sem API de IA nem persistência.
+- Chat de acolhimento integrado à OpenAI no servidor, sem persistência de mensagens.
 - Catálogo com perfis explicitamente fictícios.
 - Clientes Supabase para navegador e servidor.
 - Autenticação por e-mail e senha para psicólogos.
 - Área profissional para envio do cadastro à verificação.
 - Área administrativa para aprovar, suspender, restaurar ou excluir cadastros.
 - Catálogo público alimentado somente por perfis aprovados no PostgreSQL.
+- Identidade visual oficial aplicada no cabeçalho, metadados sociais e ícone da aplicação.
 - Migration PostgreSQL relacional com RLS e auditoria administrativa.
 - TypeScript estrito, ESLint, Prettier e preparação para Vercel.
 
@@ -39,6 +40,7 @@ As telas funcionam sem Supabase configurado. Para integrar dados, preencha sem v
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
+OPENAI_API_KEY=
 ```
 
 Encontre ambos em **Connect** no projeto Supabase. A URL e a chave
@@ -110,16 +112,16 @@ src/types/             tipos compartilhados
 supabase/migrations/   evolução do PostgreSQL
 ```
 
-## Deploy futuro
+## Deploy
 
-Importe o repositório na Vercel, configure as variáveis por ambiente e use o build padrão do Next.js. Separe os projetos Supabase de desenvolvimento, homologação e produção.
+O repositório está conectado à Vercel. Configure as variáveis por ambiente e use o build padrão do Next.js. Separe os projetos Supabase de desenvolvimento, homologação e produção.
 
 ## Próximas etapas
 
 1. Definir privacidade, consentimento e protocolo para situações de risco com especialistas responsáveis.
-2. Configurar autenticação e criação segura de perfis.
-3. Criar painel e processo de verificação de profissionais.
-4. Integrar assistente com limites claros, avaliação de segurança e encaminhamento — sem diagnóstico.
-5. Adicionar testes, auditoria de acessibilidade e monitoramento.
+2. Aplicar a migration e configurar autenticação no Supabase.
+3. Criar e promover a primeira conta administrativa.
+4. Validar cadastro, aprovação e publicação ponta a ponta.
+5. Adicionar testes automatizados, auditoria de acessibilidade e monitoramento.
 
 Em risco imediato, procure o SAMU (192), uma emergência local ou o CVV (188). Valide a disponibilidade dos serviços para cada região atendida.
