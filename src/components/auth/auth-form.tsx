@@ -53,12 +53,17 @@ export function AuthForm({ mode, action, error, message }: Props) {
             </Link>
           </>
         ) : (
-          <>
-            É psicólogo(a)?{' '}
-            <Link href="/cadastro-profissional">
-              <u>Cadastre-se</u>
+          <span className="auth-links">
+            <Link href="/recuperar-senha">
+              <u>Esqueci ou ainda não defini minha senha</u>
             </Link>
-          </>
+            <span>
+              É psicólogo(a)?{' '}
+              <Link href="/cadastro-profissional">
+                <u>Cadastre-se</u>
+              </Link>
+            </span>
+          </span>
         )}
       </p>
     </form>

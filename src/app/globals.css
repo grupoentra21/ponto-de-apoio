@@ -129,6 +129,10 @@ select {
   background: var(--sage);
   color: var(--ink);
 }
+.auth-links {
+  display: grid;
+  gap: 0.6rem;
+}
 .dashboard-page {
   padding: 3rem 0;
 }
