@@ -8,7 +8,7 @@ Fundação técnica de uma plataforma para acolhimento inicial e encaminhamento 
 - [Modelo PostgreSQL, RLS e segurança](docs/DATABASE_AND_SECURITY.md)
 - [Implantação e operação administrativa](docs/OPERATIONS.md)
 
-> **Estado de publicação:** a área administrativa e o cadastro profissional estão na branch `codex/admin-portal-production`. A migration ainda precisa ser aplicada ao Supabase antes do merge e da liberação completa em produção.
+> **Estado de publicação:** a área administrativa, o cadastro profissional e a base PostgreSQL com RLS estão publicados em produção.
 
 ## Estado desta etapa
 
@@ -62,7 +62,7 @@ http://localhost:3000/api/health/supabase
 Uma conexão funcional retorna `200` com `{"status":"ok"}`. Configuração
 ausente, indisponibilidade ou schema ainda não aplicado retorna `503` sem expor
 detalhes do banco. O endpoint roda somente no servidor e faz uma consulta sem
-retornar linhas da tabela `specialties`.
+retornar linhas da tabela `professionals`.
 
 ## Banco de dados e primeiro administrador
 
@@ -77,6 +77,21 @@ where id = (select id from auth.users where email = 'ADMIN@EXEMPLO.COM');
 ```
 
 Em **Authentication → URL Configuration**, defina a URL de produção e adicione `https://SEU-DOMINIO/auth/callback` às URLs de redirecionamento. Mantenha a confirmação de e-mail habilitada.
+
+Para a recuperação funcionar mesmo quando o e-mail é aberto em outro
+navegador, configure o template **Authentication → Email Templates → Reset
+Password** com um link baseado em `token_hash`:
+
+```html
+<a
+  href="{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=recovery&next=/definir-senha"
+>
+  Definir nova senha
+</a>
+```
+
+A rota aceita somente o tipo `recovery` e restringe `next` a caminhos internos,
+evitando redirecionamentos para outros domínios.
 
 Antes de produção, revise papéis administrativos, verificação profissional, consentimento, retenção e exclusão de conteúdo sensível.
 
@@ -119,9 +134,7 @@ O repositório está conectado à Vercel. Configure as variáveis por ambiente e
 ## Próximas etapas
 
 1. Definir privacidade, consentimento e protocolo para situações de risco com especialistas responsáveis.
-2. Aplicar a migration e configurar autenticação no Supabase.
-3. Criar e promover a primeira conta administrativa.
-4. Validar cadastro, aprovação e publicação ponta a ponta.
-5. Adicionar testes automatizados, auditoria de acessibilidade e monitoramento.
+2. Validar cadastro, aprovação e publicação ponta a ponta.
+3. Adicionar testes automatizados, auditoria de acessibilidade e monitoramento.
 
 Em risco imediato, procure o SAMU (192), uma emergência local ou o CVV (188). Valide a disponibilidade dos serviços para cada região atendida.
