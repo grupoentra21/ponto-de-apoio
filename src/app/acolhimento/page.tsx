@@ -4,7 +4,7 @@ export const metadata: Metadata = { title: 'Acolhimento inicial' };
 export default function AcolhimentoPage() {
   return (
     <section className="container" style={{ padding: '3rem 0' }}>
-      <p className="eyebrow">Demonstração da experiência</p>
+      <p className="eyebrow">Acolhimento inicial</p>
       <h1
         style={{
           fontFamily: 'Georgia,serif',
@@ -15,8 +15,8 @@ export default function AcolhimentoPage() {
         Espaço de acolhimento
       </h1>
       <p style={{ color: 'var(--muted)', maxWidth: 720 }}>
-        Esta interface é apenas visual nesta primeira etapa. Nenhuma mensagem é
-        enviada, analisada ou armazenada.
+        Converse no seu ritmo. As mensagens são enviadas à OpenAI para gerar a
+        resposta, mas não são armazenadas pelo Ponto de Apoio nesta etapa.
       </p>
       <ChatDemo />
     </section>
