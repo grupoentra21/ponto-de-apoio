@@ -1,4 +1,6 @@
+import Image from 'next/image';
 import Link from 'next/link';
+
 export function Header() {
   return (
     <header
@@ -24,28 +26,16 @@ export function Header() {
         <Link
           href="/"
           aria-label="Ponto de Apoio — início"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            fontWeight: 850,
-          }}
+          className="brand-link"
         >
-          <span
-            aria-hidden="true"
-            style={{
-              width: 34,
-              height: 34,
-              borderRadius: '50%',
-              display: 'grid',
-              placeItems: 'center',
-              background: 'var(--green)',
-              color: 'white',
-            }}
-          >
-            ⌂
-          </span>
-          Ponto de Apoio
+          <Image
+            className="brand-logo"
+            src="/brand/ponto-de-apoio-logo-green.png"
+            alt="Ponto de Apoio"
+            width={2172}
+            height={724}
+            priority
+          />
         </Link>
         <nav
           className="desktop-nav"
