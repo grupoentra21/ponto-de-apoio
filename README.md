@@ -2,18 +2,31 @@
 
 Fundação técnica de uma plataforma para acolhimento inicial e encaminhamento a profissionais de saúde mental. A aplicação não diagnostica, não substitui profissionais e não apresenta o assistente como serviço clínico.
 
+## Documentação
+
+- [Visão geral, fluxos e estado dos ambientes](docs/SYSTEM_OVERVIEW.md)
+- [Modelo PostgreSQL, RLS e segurança](docs/DATABASE_AND_SECURITY.md)
+- [Implantação e operação administrativa](docs/OPERATIONS.md)
+
+> **Estado de publicação:** a área administrativa e o cadastro profissional estão na branch `codex/admin-portal-production`. A migration ainda precisa ser aplicada ao Supabase antes do merge e da liberação completa em produção.
+
 ## Estado desta etapa
 
 - Landing page responsiva.
-- Chat demonstrativo sem API de IA nem persistência.
+- Chat de acolhimento integrado à OpenAI no servidor, sem persistência de mensagens.
 - Catálogo com perfis explicitamente fictícios.
 - Clientes Supabase para navegador e servidor.
-- Migration PostgreSQL relacional com RLS e políticas iniciais.
+- Autenticação por e-mail e senha para psicólogos.
+- Área profissional para envio do cadastro à verificação.
+- Área administrativa para aprovar, suspender, restaurar ou excluir cadastros.
+- Catálogo público alimentado somente por perfis aprovados no PostgreSQL.
+- Identidade visual oficial aplicada no cabeçalho, metadados sociais e ícone da aplicação.
+- Migration PostgreSQL relacional com RLS e auditoria administrativa.
 - TypeScript estrito, ESLint, Prettier e preparação para Vercel.
 
 ## Executar localmente
 
-Requisitos: Node.js 20.9 ou superior e npm.
+Requisitos: Node.js 22 ou superior e npm.
 
 ```bash
 npm install
@@ -26,6 +39,8 @@ As telas funcionam sem Supabase configurado. Para integrar dados, preencha sem v
 ```env
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+OPENAI_API_KEY=
 ```
 
 Encontre ambos em **Connect** no projeto Supabase. A URL e a chave
@@ -49,9 +64,19 @@ ausente, indisponibilidade ou schema ainda não aplicado retorna `503` sem expor
 detalhes do banco. O endpoint roda somente no servidor e faz uma consulta sem
 retornar linhas da tabela `specialties`.
 
-## Banco de dados
+## Banco de dados e primeiro administrador
 
-A migration em `supabase/migrations/20260819000000_initial_schema.sql` cria `profiles`, `professionals`, `specialties`, a relação N:N `professional_specialties`, `conversations` e `messages`. Todas têm RLS habilitado. Somente especialidades e profissionais publicados são públicos; perfil e conversas ficam restritos ao próprio usuário.
+A migration em `supabase/migrations/20260819000000_initial_schema.sql` cria os perfis, cadastros profissionais e a trilha de auditoria. O catálogo só lê profissionais aprovados e publicados. O papel administrativo não pode ser escolhido no cadastro público.
+
+Depois de criar uma conta normalmente, promova somente a conta da pessoa responsável pelo painel usando o SQL Editor do Supabase:
+
+```sql
+update public.profiles
+set role = 'admin', updated_at = now()
+where id = (select id from auth.users where email = 'ADMIN@EXEMPLO.COM');
+```
+
+Em **Authentication → URL Configuration**, defina a URL de produção e adicione `https://SEU-DOMINIO/auth/callback` às URLs de redirecionamento. Mantenha a confirmação de e-mail habilitada.
 
 Antes de produção, revise papéis administrativos, verificação profissional, consentimento, retenção e exclusão de conteúdo sensível.
 
@@ -87,16 +112,16 @@ src/types/             tipos compartilhados
 supabase/migrations/   evolução do PostgreSQL
 ```
 
-## Deploy futuro
+## Deploy
 
-Importe o repositório na Vercel, configure as variáveis por ambiente e use o build padrão do Next.js. Separe os projetos Supabase de desenvolvimento, homologação e produção.
+O repositório está conectado à Vercel. Configure as variáveis por ambiente e use o build padrão do Next.js. Separe os projetos Supabase de desenvolvimento, homologação e produção.
 
 ## Próximas etapas
 
 1. Definir privacidade, consentimento e protocolo para situações de risco com especialistas responsáveis.
-2. Configurar autenticação e criação segura de perfis.
-3. Criar painel e processo de verificação de profissionais.
-4. Integrar assistente com limites claros, avaliação de segurança e encaminhamento — sem diagnóstico.
-5. Adicionar testes, auditoria de acessibilidade e monitoramento.
+2. Aplicar a migration e configurar autenticação no Supabase.
+3. Criar e promover a primeira conta administrativa.
+4. Validar cadastro, aprovação e publicação ponta a ponta.
+5. Adicionar testes automatizados, auditoria de acessibilidade e monitoramento.
 
 Em risco imediato, procure o SAMU (192), uma emergência local ou o CVV (188). Valide a disponibilidade dos serviços para cada região atendida.

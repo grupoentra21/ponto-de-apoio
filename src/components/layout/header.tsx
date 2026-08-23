@@ -49,6 +49,8 @@ export function Header() {
         >
           <Link href="/#como-funciona">Como funciona</Link>
           <Link href="/profissionais">Profissionais</Link>
+          <Link href="/cadastro-profissional">Sou psicólogo(a)</Link>
+          <Link href="/entrar">Entrar</Link>
           <Link className="button" href="/acolhimento">
             Conversar agora
           </Link>
