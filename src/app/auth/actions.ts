@@ -20,8 +20,8 @@ export async function signUp(form: FormData) {
       'Preencha os campos. A senha deve ter pelo menos 8 caracteres.',
     );
   const origin =
-    (await headers()).get('origin') ??
     process.env.NEXT_PUBLIC_SITE_URL ??
+    (await headers()).get('origin') ??
     'http://localhost:3000';
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
@@ -45,6 +45,68 @@ export async function signIn(form: FormData) {
   });
   if (error) fail('/entrar', 'E-mail ou senha inválidos.');
   redirect('/area-profissional');
+}
+
+export async function requestPasswordReset(form: FormData) {
+  const email = text(form, 'email');
+  if (!email) fail('/recuperar-senha', 'Informe um e-mail válido.');
+
+  const origin =
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    (await headers()).get('origin') ??
+    'http://localhost:3000';
+  const supabase = await createClient();
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}/auth/callback?next=/definir-senha`,
+  });
+
+  if (error) {
+    fail(
+      '/recuperar-senha',
+      'Não foi possível enviar o link agora. Tente novamente em alguns minutos.',
+    );
+  }
+
+  redirect(
+    '/entrar?mensagem=Se o e-mail estiver cadastrado, você receberá um link seguro para definir a senha.',
+  );
+}
+
+export async function updatePassword(form: FormData) {
+  const password = text(form, 'password');
+  const confirmation = text(form, 'passwordConfirmation');
+
+  if (password.length < 8) {
+    fail('/definir-senha', 'A senha deve ter pelo menos 8 caracteres.');
+  }
+  if (password !== confirmation) {
+    fail('/definir-senha', 'As senhas informadas não são iguais.');
+  }
+
+  const supabase = await createClient();
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData.user) {
+    fail(
+      '/recuperar-senha',
+      'O link expirou ou já foi utilizado. Solicite um novo link.',
+    );
+  }
+
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) {
+    fail(
+      '/definir-senha',
+      'Não foi possível definir a senha. Solicite um novo link.',
+    );
+  }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', userData.user.id)
+    .single();
+
+  redirect(profile?.role === 'admin' ? '/admin' : '/area-profissional');
 }
 
 export async function signOut() {
