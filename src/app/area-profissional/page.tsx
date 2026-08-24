@@ -28,6 +28,7 @@ export default async function ProfessionalArea({
   );
   const profile = profileData as Profile | null;
   const professional = professionalData as Professional | null;
+  const displayName = profile?.full_name?.trim();
   if (profile?.role === 'admin') {
     const { redirect } = await import('next/navigation');
     redirect('/admin');
@@ -39,7 +40,7 @@ export default async function ProfessionalArea({
       <div className="dashboard-heading">
         <div>
           <p className="eyebrow">Área do profissional</p>
-          <h1>Olá, {profile?.full_name}</h1>
+          <h1>{displayName ? `Olá, ${displayName}` : 'Olá!'}</h1>
         </div>
         <form action={signOut}>
           <button className="button secondary">Sair</button>
@@ -87,7 +88,8 @@ export default async function ProfessionalArea({
               defaultValue={professional?.registration_region ?? ''}
               disabled={locked}
               placeholder="CRP 12"
-              pattern="CRP\\s*[0-9]{2}"
+              pattern={'CRP\\s*[0-9]{2}'}
+              title="Use o formato CRP 12."
             />
           </label>
           <label>
