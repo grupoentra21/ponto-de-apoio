@@ -14,7 +14,7 @@ Fundação técnica de uma plataforma para acolhimento inicial e encaminhamento 
 
 - Landing page responsiva.
 - Chat de acolhimento integrado à OpenAI no servidor, sem persistência de mensagens.
-- Catálogo com perfis explicitamente fictícios.
+- Busca assistida no chat que consulta somente profissionais aprovados e publicados.
 - Clientes Supabase para navegador e servidor.
 - Autenticação por e-mail e senha para psicólogos.
 - Área profissional para envio do cadastro à verificação.
@@ -94,6 +94,19 @@ A rota aceita somente o tipo `recovery` e restringe `next` a caminhos internos,
 evitando redirecionamentos para outros domínios.
 
 Antes de produção, revise papéis administrativos, verificação profissional, consentimento, retenção e exclusão de conteúdo sensível.
+
+## Busca de profissionais pelo chat
+
+Quando uma pessoa pede opções de atendimento, a rota `/api/chat` pode chamar a
+ferramenta interna `buscar_profissionais`. A consulta é executada no servidor e
+aplica obrigatoriamente `status = approved` e `is_published = true`, além dos
+filtros opcionais de modalidade, cidade e UF.
+
+A OpenAI recebe somente nome público, CRP, apresentação, modalidade e
+localização. E-mail, identificadores internos, dados administrativos e qualquer
+dado de acolhimento não são incluídos. Os resultados usam rotação diária neutra
+e devem ser apresentados como opções compatíveis, não como ranking, diagnóstico
+ou recomendação clínica. A RLS continua sendo a última camada de autorização.
 
 ```bash
 npx supabase link --project-ref SEU_PROJECT_REF
