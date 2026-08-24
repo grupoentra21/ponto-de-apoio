@@ -9,6 +9,64 @@ const statusLabel = {
   rejected: 'Revisão necessária',
   suspended: 'Suspenso',
 };
+
+const crpRegions = [
+  ['CRP 01', 'Distrito Federal'],
+  ['CRP 02', 'Pernambuco'],
+  ['CRP 03', 'Bahia'],
+  ['CRP 04', 'Minas Gerais'],
+  ['CRP 05', 'Rio de Janeiro'],
+  ['CRP 06', 'São Paulo'],
+  ['CRP 07', 'Rio Grande do Sul'],
+  ['CRP 08', 'Paraná'],
+  ['CRP 09', 'Goiás'],
+  ['CRP 10', 'Pará e Amapá'],
+  ['CRP 11', 'Ceará'],
+  ['CRP 12', 'Santa Catarina'],
+  ['CRP 13', 'Paraíba'],
+  ['CRP 14', 'Mato Grosso do Sul'],
+  ['CRP 15', 'Alagoas'],
+  ['CRP 16', 'Espírito Santo'],
+  ['CRP 17', 'Rio Grande do Norte'],
+  ['CRP 18', 'Mato Grosso'],
+  ['CRP 19', 'Sergipe'],
+  ['CRP 20', 'Amazonas e Roraima'],
+  ['CRP 21', 'Piauí'],
+  ['CRP 22', 'Maranhão'],
+  ['CRP 23', 'Tocantins'],
+  ['CRP 24', 'Acre e Rondônia'],
+] as const;
+
+const states = [
+  ['AC', 'Acre'],
+  ['AL', 'Alagoas'],
+  ['AP', 'Amapá'],
+  ['AM', 'Amazonas'],
+  ['BA', 'Bahia'],
+  ['CE', 'Ceará'],
+  ['DF', 'Distrito Federal'],
+  ['ES', 'Espírito Santo'],
+  ['GO', 'Goiás'],
+  ['MA', 'Maranhão'],
+  ['MT', 'Mato Grosso'],
+  ['MS', 'Mato Grosso do Sul'],
+  ['MG', 'Minas Gerais'],
+  ['PA', 'Pará'],
+  ['PB', 'Paraíba'],
+  ['PR', 'Paraná'],
+  ['PE', 'Pernambuco'],
+  ['PI', 'Piauí'],
+  ['RJ', 'Rio de Janeiro'],
+  ['RN', 'Rio Grande do Norte'],
+  ['RS', 'Rio Grande do Sul'],
+  ['RO', 'Rondônia'],
+  ['RR', 'Roraima'],
+  ['SC', 'Santa Catarina'],
+  ['SP', 'São Paulo'],
+  ['SE', 'Sergipe'],
+  ['TO', 'Tocantins'],
+] as const;
+
 export default async function ProfessionalArea({
   searchParams,
 }: {
@@ -82,15 +140,21 @@ export default async function ProfessionalArea({
           </label>
           <label>
             Região do CRP
-            <input
+            <select
               name="registrationRegion"
               required
               defaultValue={professional?.registration_region ?? ''}
               disabled={locked}
-              placeholder="CRP 12"
-              pattern={'CRP\\s*[0-9]{2}'}
-              title="Use o formato CRP 12."
-            />
+            >
+              <option value="" disabled>
+                Selecione a região
+              </option>
+              {crpRegions.map(([value, region]) => (
+                <option key={value} value={value}>
+                  {value} — {region}
+                </option>
+              ))}
+            </select>
           </label>
           <label>
             Modalidade
@@ -114,12 +178,18 @@ export default async function ProfessionalArea({
           </label>
           <label>
             UF
-            <input
+            <select
               name="state"
-              maxLength={2}
               defaultValue={professional?.state ?? ''}
               disabled={locked}
-            />
+            >
+              <option value="">Selecione a UF</option>
+              {states.map(([value, state]) => (
+                <option key={value} value={value}>
+                  {value} — {state}
+                </option>
+              ))}
+            </select>
           </label>
           <label>
             E-mail profissional
