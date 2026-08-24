@@ -22,11 +22,12 @@ Preencha `.env.local` sem versioná-lo:
 NEXT_PUBLIC_SUPABASE_URL=https://SEU_PROJECT_REF.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
+OPENAI_API_KEY=sk-...
 ```
 
 As duas primeiras informações ficam no botão **Connect** do projeto Supabase. Use a chave publicável atual, nunca `service_role` ou uma chave secreta.
 
-## 3. Aplicação da migration
+## 3. Aplicação das migrations
 
 Antes de aplicar, confirme se o banco ainda não recebeu alterações manuais incompatíveis.
 
@@ -37,17 +38,17 @@ npx supabase db push --dry-run
 npx supabase db push
 ```
 
-A migration usada é `supabase/migrations/20260819000000_initial_schema.sql`. Em um banco que já possua objetos com os mesmos nomes, não execute o SQL às cegas: faça `supabase db pull`, compare o histórico e produza uma migration incremental.
+As migrations versionadas ficam em `supabase/migrations/`. Em um banco que já possua objetos com os mesmos nomes, não execute o SQL às cegas: faça `supabase db pull`, compare o histórico e produza uma migration incremental.
 
 ## 4. Configuração do Supabase Auth
 
 Em **Authentication → URL Configuration**:
 
-- Site URL de produção: `https://ponto-de-apoio.vercel.app`;
-- Redirect URL: `https://ponto-de-apoio.vercel.app/auth/callback`;
+- Site URL de produção: `https://pontodeapoio.social.br`;
+- Redirect URL: `https://pontodeapoio.social.br/auth/callback`;
 - desenvolvimento: `http://localhost:3000/auth/callback`.
 
-Mantenha a confirmação de e-mail habilitada. Para produção, configure SMTP próprio; o serviço padrão do Supabase possui limites e não deve ser tratado como infraestrutura definitiva de entrega.
+Mantenha a confirmação de e-mail habilitada. O subdomínio `auth.pontodeapoio.social.br` está validado no Resend e o SMTP próprio está configurado no Supabase. O template de recuperação deve apontar para `/auth/callback` usando `token_hash` do tipo `recovery`.
 
 ## 5. Primeiro administrador
 
@@ -80,7 +81,8 @@ Adicione em **Settings → Environment Variables**, para Production e Preview co
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://SEU_PROJECT_REF.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
-NEXT_PUBLIC_SITE_URL=https://ponto-de-apoio.vercel.app
+NEXT_PUBLIC_SITE_URL=https://pontodeapoio.social.br
+OPENAI_API_KEY=sk-...
 ```
 
 Defina Node.js 22 ou deixe a Vercel respeitar o campo `engines` do `package.json`. Após modificar variáveis, faça um novo deploy.
@@ -96,8 +98,20 @@ Defina Node.js 22 ou deixe a Vercel respeitar o campo `engines` do `package.json
 7. Suspenda o cadastro e confirme que desaparece imediatamente.
 8. Restaure e confirme a republicação.
 9. Verifique `admin_audit_logs` no Table Editor.
+10. No chat, peça psicólogos online e confirme que somente registros `approved` e publicados aparecem.
+11. Teste cidade, UF e modalidade sem informar dados pessoais ou conteúdo clínico.
+12. Confirme que a resposta não contém e-mail, UUID ou informações administrativas.
 
 Faça os testes com registros explicitamente marcados como teste e remova-os antes do lançamento.
+
+### Critérios para a busca assistida
+
+- um cadastro pendente, rejeitado ou suspenso nunca deve aparecer;
+- um cadastro aprovado com `is_published = false` nunca deve aparecer;
+- a IA não pode inventar resultados quando a consulta retorna vazia;
+- a ordem deve ser descrita como neutra, sem avaliação de qualidade;
+- a resposta não deve ser apresentada como diagnóstico, indicação clínica ou confirmação de disponibilidade;
+- falhas no Supabase devem resultar em mensagem genérica, sem detalhes internos.
 
 ## 8. Operação administrativa
 

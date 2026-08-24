@@ -6,11 +6,11 @@ O Ponto de Apoio está sendo preparado como um catálogo de psicólogos verifica
 
 A identidade visual fica versionada em `public/brand/`: a marca verde é usada em superfícies claras, a marca branca fica disponível para superfícies escuras e o símbolo isolado atende favicon e atalhos da aplicação.
 
-O produto não presta atendimento psicológico, não emite diagnóstico e não é um serviço de emergência. A tela de acolhimento usa a OpenAI para orientação inicial com limites explícitos; a chave permanece no servidor e as mensagens não são persistidas pelo Ponto de Apoio.
+O produto não presta atendimento psicológico, não emite diagnóstico e não é um serviço de emergência. A tela de acolhimento usa a OpenAI para orientação inicial com limites explícitos; a chave permanece no servidor e as mensagens não são persistidas pelo Ponto de Apoio. Quando solicitado, o assistente pode consultar o catálogo por uma ferramenta interna controlada e apresentar somente profissionais aprovados e publicados.
 
 ## Estado por ambiente
 
-### Branch `codex/admin-portal-production`
+### Produção atual
 
 - autenticação de psicólogos implementada;
 - painel administrativo implementado;
@@ -20,14 +20,9 @@ O produto não presta atendimento psicológico, não emite diagnóstico e não �
 - identidade visual oficial aplicada;
 - migration PostgreSQL e RLS preparadas;
 - lint, formatação, TypeScript e build aprovados.
-
-### Produção antes do merge desta branch
-
-- `https://ponto-de-apoio.vercel.app/`: disponível;
-- `/admin`: ainda retorna 404;
-- `/cadastro-profissional`: ainda retorna 404;
-- `/api/health/supabase`: retorna 503 porque o schema ainda não foi aplicado;
-- a branch administrativa já está no GitHub e aguarda PR, migration e validação final.
+- domínio oficial `https://pontodeapoio.social.br` validado na Vercel;
+- Supabase/PostgreSQL, Auth, RLS, Resend e recuperação de senha operacionais;
+- busca de profissionais aprovados pelo chat validada em produção.
 
 ## Perfis de acesso
 
@@ -51,6 +46,17 @@ O papel administrativo nunca é aceito a partir de dados enviados pelo navegador
 8. Depois da aprovação administrativa, passa a `approved` e `is_published = true`.
 
 Perfis aprovados ou suspensos ficam bloqueados para edição pelo profissional. Mudanças nesses estados dependem da equipe administrativa.
+
+## Busca de profissionais pelo acolhimento
+
+1. A pessoa pede opções de psicólogos e pode informar modalidade, cidade ou UF.
+2. A OpenAI solicita a ferramenta interna `buscar_profissionais`.
+3. O servidor valida os argumentos e consulta o Supabase com `status = approved` e `is_published = true`.
+4. A RLS reafirma a mesma restrição no PostgreSQL.
+5. A ferramenta retorna no máximo oito resultados com nome público, CRP, apresentação, modalidade e localização.
+6. O assistente apresenta opções compatíveis e informa que a ordem não representa qualidade nem recomendação clínica.
+
+Resultados são submetidos a uma rotação diária neutra. A ferramenta não recebe e-mail, identificadores internos, dados administrativos, conteúdo das conversas ou disponibilidade não cadastrada. Se não houver resultado, a IA deve informar isso sem inventar profissionais.
 
 ## Fluxo administrativo
 
@@ -90,7 +96,12 @@ Navegador
             │
 Next.js App Router + Server Actions + Proxy de sessão
             │
-Supabase API
+      ┌─────┴──────────┐
+      │                │
+Supabase API      OpenAI Responses API
+      │           + ferramenta controlada
+      │                │
+      └───────┬────────┘
             │
 PostgreSQL + Row Level Security
 ```
@@ -105,8 +116,9 @@ O projeto utiliza Next.js App Router, React, TypeScript, `@supabase/ssr` e `@sup
 - agenda, pagamento ou assinatura;
 - validação automática do CRP;
 - upload de documentos;
-- redefinição de senha pela interface;
 - autenticação multifator;
 - exclusão de contas do Supabase Auth pelo painel.
+- agenda e confirmação de disponibilidade em tempo real;
+- recomendação clínica, ranking de profissionais ou matching baseado em diagnóstico.
 
 Esses itens exigem modelagem, políticas, testes e decisões operacionais próprias antes de serem ativados.

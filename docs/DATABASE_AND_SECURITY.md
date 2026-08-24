@@ -95,17 +95,38 @@ O fluxo atual não precisa de `service_role`. Operações administrativas usam a
 - erros exibidos no login não confirmam se determinado e-mail está cadastrado;
 - logs da aplicação não devem receber CRP, biografia, tokens ou conteúdo sensível.
 
+## Acesso do chat ao catálogo
+
+A OpenAI não possui acesso direto ao Supabase. A rota `/api/chat` expõe apenas a
+ferramenta interna `buscar_profissionais`, executada pela aplicação no servidor.
+A consulta sempre exige `status = approved` e `is_published = true`; filtros de
+modalidade, cidade e UF são opcionais e validados antes da consulta.
+
+Somente estes campos públicos podem compor o resultado da ferramenta:
+
+- nome público;
+- número e região do CRP;
+- apresentação profissional;
+- modalidade;
+- cidade e UF;
+- URL do catálogo.
+
+E-mail, UUID, dados de autenticação, estado administrativo, auditoria e qualquer
+conteúdo de acolhimento não são enviados ao modelo. A consulta usa a chave
+publicável e permanece sujeita à RLS, sem `service_role`. O limite é de oito
+resultados, com rotação diária neutra para evitar um ranking fixo.
+
 ## Controles ainda recomendados
 
 Antes de uma operação comercial completa:
 
 1. habilitar MFA para administradores;
-2. implantar recuperação de senha;
-3. definir processo de validação periódica do CRP;
-4. criar política formal de retenção e exclusão;
-5. restringir e monitorar tentativas de login;
-6. configurar alertas e resposta a incidentes;
-7. adicionar testes automatizados das políticas RLS;
-8. executar revisão jurídica, LGPD e ética profissional;
-9. utilizar ambientes Supabase separados para homologação e produção;
-10. revisar a exposição do e-mail profissional antes do lançamento.
+2. definir processo de validação periódica do CRP;
+3. criar política formal de retenção e exclusão;
+4. restringir e monitorar tentativas de login;
+5. configurar alertas e resposta a incidentes;
+6. adicionar testes automatizados das políticas RLS e da ferramenta de busca;
+7. executar revisão jurídica, LGPD e ética profissional;
+8. utilizar ambientes Supabase separados para homologação e produção;
+9. revisar a exposição do e-mail profissional antes do lançamento;
+10. monitorar qualidade, equidade e possíveis vieses na apresentação dos resultados.
