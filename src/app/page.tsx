@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { HowItWorks } from '@/components/marketing/how-it-works';
 export default function Home() {
   return (
     <>
@@ -86,9 +85,6 @@ export default function Home() {
             </p>
           </div>
         </div>
-      </section>
-      <section style={{ padding: '5rem 0', background: 'var(--paper)' }}>
-        <HowItWorks />
       </section>
       <section style={{ padding: '5rem 0' }}>
         <div
