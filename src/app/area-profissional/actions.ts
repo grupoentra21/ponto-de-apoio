@@ -10,6 +10,7 @@ export async function saveProfessional(form: FormData) {
   const region = value(form, 'registrationRegion').toUpperCase();
   const state = value(form, 'state').toUpperCase();
   const mode = value(form, 'serviceMode');
+  const avatarPath = value(form, 'avatarPath');
   if (
     !registrationNumber ||
     !/^CRP\s*\d{2}$/i.test(region) ||
@@ -27,6 +28,7 @@ export async function saveProfessional(form: FormData) {
     city: value(form, 'city') || null,
     state: state || null,
     contact_email: value(form, 'contactEmail') || user.email || null,
+    avatar_path: avatarPath === `${user.id}/avatar.webp` ? avatarPath : null,
     status: 'pending_review',
     is_published: false,
     reviewed_by: null,

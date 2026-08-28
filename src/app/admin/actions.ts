@@ -44,7 +44,7 @@ export async function deleteProfessional(form: FormData) {
   const { supabase, user } = await requireAdmin();
   const { data } = await supabase
     .from('professionals')
-    .select('registration_number,registration_region')
+    .select('registration_number,registration_region,avatar_path')
     .eq('id', id)
     .single();
   const { error } = await supabase.from('professionals').delete().eq('id', id);
@@ -55,6 +55,10 @@ export async function deleteProfessional(form: FormData) {
       action: 'deleted',
       details: data ?? {},
     });
+  if (!error && data?.avatar_path)
+    await supabase.storage
+      .from('professional-avatars')
+      .remove([data.avatar_path]);
   revalidatePath('/admin');
   revalidatePath('/profissionais');
 }

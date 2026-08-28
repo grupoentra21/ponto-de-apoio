@@ -12,6 +12,7 @@ type Row = {
   status: string;
   is_published: boolean;
   created_at: string;
+  avatar_path: string | null;
   profiles: { full_name: string } | null;
 };
 const labels: Record<string, string> = {
@@ -26,10 +27,23 @@ export default async function AdminPage() {
   const { data, error } = await supabase
     .from('professionals')
     .select(
-      'id,registration_number,registration_region,service_mode,city,state,status,is_published,created_at,profiles!professionals_profile_id_fkey(full_name)',
+      'id,registration_number,registration_region,service_mode,city,state,status,is_published,created_at,avatar_path,profiles!professionals_profile_id_fkey(full_name)',
     )
     .order('created_at', { ascending: false });
   const rows = (data ?? []) as unknown as Row[];
+  const avatarUrls = new Map<string, string>();
+  const avatarPaths = rows.flatMap((row) =>
+    row.avatar_path ? [row.avatar_path] : [],
+  );
+  if (avatarPaths.length > 0) {
+    const { data: signedAvatars } = await supabase.storage
+      .from('professional-avatars')
+      .createSignedUrls(avatarPaths, 3600);
+    signedAvatars?.forEach((avatar) => {
+      if (avatar.path && avatar.signedUrl)
+        avatarUrls.set(avatar.path, avatar.signedUrl);
+    });
+  }
   return (
     <main className="container dashboard-page">
       <div className="dashboard-heading">
@@ -85,13 +99,31 @@ export default async function AdminPage() {
             {rows.map((row) => (
               <tr key={row.id}>
                 <td>
-                  <strong>{row.profiles?.full_name ?? 'Sem nome'}</strong>
-                  <br />
-                  <small>
-                    {row.city
-                      ? `${row.city}/${row.state ?? ''}`
-                      : 'Local não informado'}
-                  </small>
+                  <div className="admin-professional">
+                    <div
+                      className={`admin-avatar ${row.avatar_path && avatarUrls.get(row.avatar_path) ? 'has-photo' : ''}`}
+                      style={
+                        row.avatar_path && avatarUrls.get(row.avatar_path)
+                          ? {
+                              backgroundImage: `url("${avatarUrls.get(row.avatar_path)}")`,
+                            }
+                          : undefined
+                      }
+                      aria-hidden
+                    >
+                      {(!row.avatar_path || !avatarUrls.get(row.avatar_path)) &&
+                        (row.profiles?.full_name ?? 'P').slice(0, 1)}
+                    </div>
+                    <div>
+                      <strong>{row.profiles?.full_name ?? 'Sem nome'}</strong>
+                      <br />
+                      <small>
+                        {row.city
+                          ? `${row.city}/${row.state ?? ''}`
+                          : 'Local não informado'}
+                      </small>
+                    </div>
+                  </div>
                 </td>
                 <td>
                   {row.registration_region} {row.registration_number}
