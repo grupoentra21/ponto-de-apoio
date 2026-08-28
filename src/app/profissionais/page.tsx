@@ -10,23 +10,39 @@ type PublicProfessional = {
   city: string | null;
   state: string | null;
   contact_email: string | null;
+  avatar_path: string | null;
   profiles: { full_name: string } | null;
 };
 export default async function ProfissionaisPage() {
   let rows: PublicProfessional[] = [];
   let unavailable = false;
+  const avatarUrls = new Map<string, string>();
   try {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from('professionals')
       .select(
-        'id,registration_number,registration_region,bio,service_mode,city,state,contact_email,profiles!professionals_profile_id_fkey(full_name)',
+        'id,registration_number,registration_region,bio,service_mode,city,state,contact_email,avatar_path,profiles!professionals_profile_id_fkey(full_name)',
       )
       .eq('status', 'approved')
       .eq('is_published', true)
       .order('created_at');
     if (error) unavailable = true;
-    else rows = (data ?? []) as unknown as PublicProfessional[];
+    else {
+      rows = (data ?? []) as unknown as PublicProfessional[];
+      const paths = rows.flatMap((row) =>
+        row.avatar_path ? [row.avatar_path] : [],
+      );
+      if (paths.length > 0) {
+        const { data: signedAvatars } = await supabase.storage
+          .from('professional-avatars')
+          .createSignedUrls(paths, 3600);
+        signedAvatars?.forEach((avatar) => {
+          if (avatar.path && avatar.signedUrl)
+            avatarUrls.set(avatar.path, avatar.signedUrl);
+        });
+      }
+    }
   } catch {
     unavailable = true;
   }
@@ -64,12 +80,37 @@ export default async function ProfissionaisPage() {
       <div className="catalog-grid">
         {rows.map((p) => (
           <article className="surface professional-card" key={p.id}>
-            <div className="avatar" aria-hidden>
-              {(p.profiles?.full_name ?? 'P')
-                .split(' ')
-                .slice(0, 2)
-                .map((n) => n[0])
-                .join('')}
+            <div
+              className={`avatar ${p.avatar_path && avatarUrls.get(p.avatar_path) ? 'has-photo' : ''}`}
+              style={
+                p.avatar_path && avatarUrls.get(p.avatar_path)
+                  ? {
+                      backgroundImage: `url("${avatarUrls.get(p.avatar_path)}")`,
+                    }
+                  : undefined
+              }
+              role={
+                p.avatar_path && avatarUrls.get(p.avatar_path)
+                  ? 'img'
+                  : undefined
+              }
+              aria-label={
+                p.avatar_path && avatarUrls.get(p.avatar_path)
+                  ? `Foto de ${p.profiles?.full_name ?? 'profissional'}`
+                  : undefined
+              }
+              aria-hidden={
+                p.avatar_path && avatarUrls.get(p.avatar_path)
+                  ? undefined
+                  : true
+              }
+            >
+              {(!p.avatar_path || !avatarUrls.get(p.avatar_path)) &&
+                (p.profiles?.full_name ?? 'P')
+                  .split(' ')
+                  .slice(0, 2)
+                  .map((n) => n[0])
+                  .join('')}
             </div>
             <h2>{p.profiles?.full_name}</h2>
             <p className="muted">

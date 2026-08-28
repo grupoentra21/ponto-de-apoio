@@ -1,6 +1,7 @@
 import { requireUser } from '@/lib/auth';
 import { signOut } from '@/app/auth/actions';
 import { saveProfessional } from './actions';
+import { AvatarUpload } from '@/components/professional/avatar-upload';
 import type { Professional, Profile } from '@/types/database';
 const statusLabel = {
   draft: 'Rascunho',
@@ -93,6 +94,13 @@ export default async function ProfessionalArea({
   }
   const locked =
     professional?.status === 'approved' || professional?.status === 'suspended';
+  let avatarPreviewUrl: string | null = null;
+  if (professional?.avatar_path) {
+    const { data } = await supabase.storage
+      .from('professional-avatars')
+      .createSignedUrl(professional.avatar_path, 3600);
+    avatarPreviewUrl = data?.signedUrl ?? null;
+  }
   return (
     <main className="container dashboard-page">
       <div className="dashboard-heading">
@@ -126,6 +134,12 @@ export default async function ProfessionalArea({
         </p>
       </div>
       <form action={saveProfessional} className="surface professional-form">
+        <AvatarUpload
+          userId={user.id}
+          initialPath={professional?.avatar_path ?? null}
+          initialPreviewUrl={avatarPreviewUrl}
+          disabled={locked}
+        />
         <h2>Dados para verificação</h2>
         <div className="form-grid">
           <label>

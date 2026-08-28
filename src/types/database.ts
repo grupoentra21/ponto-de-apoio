@@ -20,6 +20,7 @@ export type Professional = {
   city: string | null;
   state: string | null;
   contact_email: string | null;
+  avatar_path: string | null;
   status: ProfessionalStatus;
   is_published: boolean;
   reviewed_by: string | null;
