@@ -92,8 +92,7 @@ export default async function ProfessionalArea({
     const { redirect } = await import('next/navigation');
     redirect('/admin');
   }
-  const locked =
-    professional?.status === 'approved' || professional?.status === 'suspended';
+  const locked = professional?.status === 'suspended';
   let avatarPreviewUrl: string | null = null;
   if (professional?.avatar_path) {
     const { data } = await supabase.storage
@@ -128,9 +127,11 @@ export default async function ProfessionalArea({
         <p>
           {professional?.status === 'pending_review'
             ? 'Nossa equipe analisará os dados antes da publicação.'
-            : professional?.status === 'suspended'
-              ? 'O cadastro foi retirado do catálogo. Entre em contato com a administração.'
-              : 'Preencha os dados profissionais abaixo.'}
+            : professional?.status === 'approved'
+              ? 'Você pode atualizar seus dados ou sua foto. Ao salvar, o cadastro voltará para verificação antes da nova publicação.'
+              : professional?.status === 'suspended'
+                ? 'O cadastro foi retirado do catálogo. Entre em contato com a administração.'
+                : 'Preencha os dados profissionais abaixo.'}
         </p>
       </div>
       <form action={saveProfessional} className="surface professional-form">
@@ -139,6 +140,7 @@ export default async function ProfessionalArea({
           initialPath={professional?.avatar_path ?? null}
           initialPreviewUrl={avatarPreviewUrl}
           disabled={locked}
+          requiresReview={professional?.status === 'approved'}
         />
         <h2>Dados para verificação</h2>
         <div className="form-grid">
