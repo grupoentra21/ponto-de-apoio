@@ -1,21 +1,5 @@
 import Link from 'next/link';
-const steps = [
-  [
-    '01',
-    'Converse no seu ritmo',
-    'Um espaço inicial acolhedor para organizar o que você está sentindo.',
-  ],
-  [
-    '02',
-    'Entenda possibilidades',
-    'Receba orientações gerais sobre áreas de atendimento que podem fazer sentido.',
-  ],
-  [
-    '03',
-    'Encontre apoio profissional',
-    'Conheça profissionais e escolha com autonomia quem combina com você.',
-  ],
-];
+import { HowItWorks } from '@/components/marketing/how-it-works';
 export default function Home() {
   return (
     <>
@@ -103,41 +87,8 @@ export default function Home() {
           </div>
         </div>
       </section>
-      <section
-        id="como-funciona"
-        style={{ padding: '5rem 0', background: 'var(--paper)' }}
-      >
-        <div className="container">
-          <p className="eyebrow">Como funciona</p>
-          <h2
-            style={{
-              fontFamily: 'Georgia,serif',
-              fontSize: 'clamp(2rem,5vw,3.5rem)',
-              margin: '.5rem 0 2.5rem',
-            }}
-          >
-            Clareza para dar o próximo passo
-          </h2>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit,minmax(230px,1fr))',
-              gap: 20,
-            }}
-          >
-            {steps.map(([number, title, text]) => (
-              <article className="surface" key={number} style={{ padding: 28 }}>
-                <span className="eyebrow">{number}</span>
-                <h3
-                  style={{ fontFamily: 'Georgia,serif', fontSize: '1.35rem' }}
-                >
-                  {title}
-                </h3>
-                <p style={{ color: 'var(--muted)' }}>{text}</p>
-              </article>
-            ))}
-          </div>
-        </div>
+      <section style={{ padding: '5rem 0', background: 'var(--paper)' }}>
+        <HowItWorks />
       </section>
       <section style={{ padding: '5rem 0' }}>
         <div

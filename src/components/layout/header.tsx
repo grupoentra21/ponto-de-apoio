@@ -1,28 +1,22 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+
+const navigation = [
+  { href: '/como-funciona', label: 'Como funciona' },
+  { href: '/profissionais', label: 'Profissionais' },
+  { href: '/sou-psicologo', label: 'Sou psicólogo(a)' },
+  { href: '/entrar', label: 'Entrar' },
+];
 
 export function Header() {
+  const pathname = usePathname();
+
   return (
-    <header
-      style={{
-        borderBottom: '1px solid #dce5df',
-        background: '#f8f5edf2',
-        position: 'sticky',
-        top: 0,
-        zIndex: 20,
-        backdropFilter: 'blur(12px)',
-      }}
-    >
-      <div
-        className="container"
-        style={{
-          minHeight: 72,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 24,
-        }}
-      >
+    <header className="site-header">
+      <div className="container header-inner">
         <Link
           href="/"
           aria-label="Ponto de Apoio — início"
@@ -37,24 +31,47 @@ export function Header() {
             priority
           />
         </Link>
-        <nav
-          className="desktop-nav"
-          aria-label="Navegação principal"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 28,
-            fontWeight: 650,
-          }}
-        >
-          <Link href="/#como-funciona">Como funciona</Link>
-          <Link href="/profissionais">Profissionais</Link>
-          <Link href="/cadastro-profissional">Sou psicólogo(a)</Link>
-          <Link href="/entrar">Entrar</Link>
-          <Link className="button" href="/acolhimento">
+        <nav className="desktop-nav" aria-label="Navegação principal">
+          {navigation.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="nav-link"
+              aria-current={pathname === item.href ? 'page' : undefined}
+            >
+              {item.label}
+            </Link>
+          ))}
+          <Link
+            className="button"
+            href="/acolhimento"
+            aria-current={pathname === '/acolhimento' ? 'page' : undefined}
+          >
             Conversar agora
           </Link>
         </nav>
+        <details className="mobile-menu">
+          <summary aria-label="Abrir menu de navegação">
+            <span aria-hidden="true" />
+            <span aria-hidden="true" />
+            <span aria-hidden="true" />
+          </summary>
+          <nav aria-label="Navegação principal em dispositivos móveis">
+            {navigation.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="nav-link"
+                aria-current={pathname === item.href ? 'page' : undefined}
+              >
+                {item.label}
+              </Link>
+            ))}
+            <Link className="button" href="/acolhimento">
+              Conversar agora
+            </Link>
+          </nav>
+        </details>
       </div>
     </header>
   );
