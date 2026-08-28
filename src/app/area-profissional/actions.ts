@@ -4,6 +4,36 @@ import { requireUser } from '@/lib/auth';
 function value(form: FormData, key: string) {
   return String(form.get(key) ?? '').trim();
 }
+
+export async function beginProfessionalRevision() {
+  const { supabase, user } = await requireUser();
+  const { data: current, error: readError } = await supabase
+    .from('professionals')
+    .select('id,status')
+    .eq('profile_id', user.id)
+    .maybeSingle();
+
+  if (readError) return { error: 'Não foi possível preparar a revisão.' };
+  if (!current || current.status !== 'approved') return { error: null };
+
+  const { error } = await supabase
+    .from('professionals')
+    .update({
+      status: 'pending_review',
+      is_published: false,
+      reviewed_by: null,
+      reviewed_at: null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', current.id);
+
+  return {
+    error: error
+      ? 'Não foi possível enviar o perfil novamente para verificação.'
+      : null,
+  };
+}
+
 export async function saveProfessional(form: FormData) {
   const { supabase, user } = await requireUser();
   const registrationNumber = value(form, 'registrationNumber');
@@ -40,7 +70,7 @@ export async function saveProfessional(form: FormData) {
     .select('id,status')
     .eq('profile_id', user.id)
     .maybeSingle();
-  if (current && ['approved', 'suspended'].includes(String(current.status)))
+  if (current && current.status === 'suspended')
     redirect(
       '/area-profissional?erro=Este perfil está bloqueado para edição. Fale com a administração.',
     );

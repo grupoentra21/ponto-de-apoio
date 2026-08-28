@@ -2,6 +2,7 @@
 
 import { ChangeEvent, useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { beginProfessionalRevision } from '@/app/area-profissional/actions';
 
 const MAX_SOURCE_SIZE = 10 * 1024 * 1024;
 const MAX_AVATAR_SIZE = 300 * 1024;
@@ -76,11 +77,13 @@ export function AvatarUpload({
   initialPath,
   initialPreviewUrl,
   disabled,
+  requiresReview,
 }: {
   userId: string;
   initialPath: string | null;
   initialPreviewUrl: string | null;
   disabled: boolean;
+  requiresReview: boolean;
 }) {
   const [avatarPath, setAvatarPath] = useState(initialPath ?? '');
   const [previewUrl, setPreviewUrl] = useState(initialPreviewUrl ?? '');
@@ -101,6 +104,10 @@ export function AvatarUpload({
     setIsUploading(true);
     try {
       const blob = await prepareAvatar(file);
+      if (requiresReview) {
+        const revision = await beginProfessionalRevision();
+        if (revision.error) throw new Error(revision.error);
+      }
       const path = `${userId}/avatar.webp`;
       const supabase = createClient();
       const { error: uploadError } = await supabase.storage
