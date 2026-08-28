@@ -1,27 +1,18 @@
 import Link from 'next/link';
+import { ChatDemo } from '@/components/chat/chat-demo';
 export default function Home() {
   return (
     <>
-      <section
-        style={{ padding: 'clamp(4rem,9vw,8rem) 0 5rem', overflow: 'hidden' }}
-      >
-        <div
-          className="container"
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,380px),1fr))',
-            alignItems: 'center',
-            gap: 'clamp(2rem,7vw,6rem)',
-          }}
-        >
-          <div>
+      <section className="home-hero">
+        <div className="container home-hero-grid">
+          <div className="home-hero-copy">
             <p className="eyebrow">
               Você não precisa encontrar o caminho sozinho
             </p>
             <h1
               style={{
                 fontFamily: 'Georgia,serif',
-                fontSize: 'clamp(2.8rem,7vw,5.6rem)',
+                fontSize: 'clamp(2.8rem,6vw,5rem)',
                 lineHeight: 0.98,
                 letterSpacing: '-.045em',
                 margin: '1rem 0 1.5rem',
@@ -47,43 +38,12 @@ export default function Home() {
                 marginTop: 30,
               }}
             >
-              <Link className="button" href="/acolhimento">
-                Iniciar conversa
-              </Link>
               <Link className="button secondary" href="/profissionais">
                 Ver profissionais
               </Link>
             </div>
           </div>
-          <div
-            className="surface"
-            aria-label="Mensagem de acolhimento ilustrativa"
-            style={{
-              padding: 'clamp(1.5rem,4vw,3rem)',
-              minHeight: 390,
-              display: 'grid',
-              alignContent: 'center',
-              background: 'linear-gradient(145deg,#dbe8dd,#fffdf8)',
-            }}
-          >
-            <span aria-hidden="true" style={{ fontSize: '4rem' }}>
-              ◡
-            </span>
-            <blockquote
-              style={{
-                fontFamily: 'Georgia,serif',
-                fontSize: 'clamp(1.55rem,3vw,2.25rem)',
-                lineHeight: 1.25,
-                margin: '1rem 0',
-              }}
-            >
-              “Tudo bem não ter todas as palavras agora. Podemos começar
-              devagar.”
-            </blockquote>
-            <p style={{ color: 'var(--muted)' }}>
-              Acolhimento sem julgamentos e sem diagnósticos.
-            </p>
-          </div>
+          <ChatDemo className="home-chat" />
         </div>
       </section>
       <section style={{ padding: '5rem 0' }}>

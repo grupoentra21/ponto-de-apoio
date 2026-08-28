@@ -8,7 +8,6 @@ const navigation = [
   { href: '/como-funciona', label: 'Como funciona' },
   { href: '/profissionais', label: 'Profissionais' },
   { href: '/sou-psicologo', label: 'Sou psicólogo(a)' },
-  { href: '/entrar', label: 'Entrar' },
 ];
 
 export function Header() {
@@ -42,13 +41,6 @@ export function Header() {
               {item.label}
             </Link>
           ))}
-          <Link
-            className="button"
-            href="/acolhimento"
-            aria-current={pathname === '/acolhimento' ? 'page' : undefined}
-          >
-            Conversar agora
-          </Link>
         </nav>
         <details className="mobile-menu">
           <summary aria-label="Abrir menu de navegação">
@@ -67,9 +59,6 @@ export function Header() {
                 {item.label}
               </Link>
             ))}
-            <Link className="button" href="/acolhimento">
-              Conversar agora
-            </Link>
           </nav>
         </details>
       </div>

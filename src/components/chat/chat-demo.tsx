@@ -13,7 +13,7 @@ const initialMessage: Message = {
     'Olá. Este pode ser um espaço para você organizar o que está sentindo. Você pode compartilhar apenas o que se sentir confortável. Como têm sido seus dias?',
 };
 
-export function ChatDemo() {
+export function ChatDemo({ className = '' }: { className?: string }) {
   const [messages, setMessages] = useState<Message[]>([initialMessage]);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -75,7 +75,7 @@ export function ChatDemo() {
   }
 
   return (
-    <div className="surface" style={{ marginTop: 28, overflow: 'hidden' }}>
+    <div className={`surface chat-shell ${className}`}>
       <div
         style={{
           padding: '1rem 1.25rem',
