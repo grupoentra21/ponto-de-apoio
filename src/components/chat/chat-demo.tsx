@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useRef, useState } from 'react';
 
 type Message = {
   role: 'user' | 'assistant';
@@ -18,6 +18,18 @@ export function ChatDemo({ className = '' }: { className?: string }) {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const messagesRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const messagesElement = messagesRef.current;
+
+    if (messagesElement) {
+      messagesElement.scrollTo({
+        top: messagesElement.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+  }, [messages, isLoading]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -92,8 +104,9 @@ export function ChatDemo({ className = '' }: { className?: string }) {
         </span>
       </div>
       <div
+        ref={messagesRef}
+        className="chat-messages"
         style={{
-          minHeight: 360,
           padding: 'clamp(1rem,4vw,2rem)',
           display: 'flex',
           flexDirection: 'column',
@@ -114,6 +127,7 @@ export function ChatDemo({ className = '' }: { className?: string }) {
                   : '20px 20px 20px 4px',
               background: item.role === 'user' ? '#f2ddcf' : 'var(--sage)',
               whiteSpace: 'pre-wrap',
+              overflowWrap: 'anywhere',
             }}
           >
             {item.content}
