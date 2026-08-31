@@ -188,6 +188,15 @@ select {
 .chat-shell {
   margin-top: 28px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: clamp(520px, 70vh, 680px);
+}
+.chat-messages {
+  flex: 1;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 .home-hero {
   padding: clamp(3rem, 7vw, 6rem) 0 4rem;
