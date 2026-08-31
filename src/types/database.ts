@@ -2,6 +2,7 @@ export type UserRole = 'user' | 'professional' | 'admin';
 export type ServiceMode = 'online' | 'in_person' | 'hybrid';
 export type ProfessionalStatus =
   'draft' | 'pending_review' | 'approved' | 'rejected' | 'suspended';
+export type VerificationDocumentType = 'identity' | 'crp' | 'selfie';
 export type Profile = {
   id: string;
   full_name: string;
@@ -25,6 +26,18 @@ export type Professional = {
   is_published: boolean;
   reviewed_by: string | null;
   reviewed_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+export type ProfessionalVerificationDocument = {
+  id: string;
+  professional_id: string;
+  document_type: VerificationDocumentType;
+  storage_path: string;
+  mime_type: string;
+  size_bytes: number;
+  uploaded_by: string;
+  consent_at: string | null;
   created_at: string;
   updated_at: string;
 };

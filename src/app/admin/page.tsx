@@ -2,6 +2,7 @@ import { requireAdmin } from '@/lib/auth';
 import { signOut } from '@/app/auth/actions';
 import { ProfessionalActions } from '@/components/admin/professional-actions';
 import { changeProfessionalStatus, deleteProfessional } from './actions';
+import Link from 'next/link';
 type Row = {
   id: string;
   registration_number: string;
@@ -31,6 +32,15 @@ export default async function AdminPage() {
     )
     .order('created_at', { ascending: false });
   const rows = (data ?? []) as unknown as Row[];
+  const { data: verificationDocuments } = await supabase
+    .from('professional_verification_documents')
+    .select('professional_id,document_type');
+  const verificationTypes = new Map<string, Set<string>>();
+  verificationDocuments?.forEach((document) => {
+    const types = verificationTypes.get(document.professional_id) ?? new Set();
+    types.add(document.document_type);
+    verificationTypes.set(document.professional_id, types);
+  });
   const avatarUrls = new Map<string, string>();
   const avatarPaths = rows.flatMap((row) =>
     row.avatar_path ? [row.avatar_path] : [],
@@ -135,9 +145,19 @@ export default async function AdminPage() {
                   </span>
                 </td>
                 <td>
+                  <Link
+                    className="verification-link"
+                    href={`/admin/profissionais/${row.id}/verificacao`}
+                  >
+                    Ver documentos ({verificationTypes.get(row.id)?.size ?? 0}
+                    /3)
+                  </Link>
                   <ProfessionalActions
                     id={row.id}
                     status={row.status}
+                    documentsComplete={
+                      verificationTypes.get(row.id)?.size === 3
+                    }
                     changeAction={changeProfessionalStatus}
                     deleteAction={deleteProfessional}
                   />

@@ -3,11 +3,13 @@ type Action = (form: FormData) => Promise<void>;
 export function ProfessionalActions({
   id,
   status,
+  documentsComplete,
   changeAction,
   deleteAction,
 }: {
   id: string;
   status: string;
+  documentsComplete: boolean;
   changeAction: Action;
   deleteAction: Action;
 }) {
@@ -16,7 +18,17 @@ export function ProfessionalActions({
       {status !== 'approved' && status !== 'suspended' && (
         <form action={changeAction}>
           <input type="hidden" name="id" value={id} />
-          <button className="button small" name="action" value="approve">
+          <button
+            className="button small"
+            name="action"
+            value="approve"
+            disabled={!documentsComplete}
+            title={
+              documentsComplete
+                ? undefined
+                : 'A aprovação exige identidade, CRP e selfie.'
+            }
+          >
             Aprovar e publicar
           </button>
         </form>
