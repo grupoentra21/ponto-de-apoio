@@ -47,6 +47,19 @@ export async function deleteProfessional(form: FormData) {
     .select('registration_number,registration_region,avatar_path')
     .eq('id', id)
     .single();
+  const { data: verificationDocuments } = await supabase
+    .from('professional_verification_documents')
+    .select('storage_path')
+    .eq('professional_id', id);
+  const verificationPaths = (verificationDocuments ?? []).map(
+    (document) => document.storage_path,
+  );
+  if (verificationPaths.length > 0) {
+    const { error: storageError } = await supabase.storage
+      .from('professional-verification')
+      .remove(verificationPaths);
+    if (storageError) return;
+  }
   const { error } = await supabase.from('professionals').delete().eq('id', id);
   if (!error)
     await supabase.from('admin_audit_logs').insert({

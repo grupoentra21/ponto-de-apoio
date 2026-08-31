@@ -1,8 +1,13 @@
 import { requireUser } from '@/lib/auth';
 import { signOut } from '@/app/auth/actions';
-import { saveProfessional } from './actions';
+import { saveProfessional, submitProfessionalVerification } from './actions';
 import { AvatarUpload } from '@/components/professional/avatar-upload';
-import type { Professional, Profile } from '@/types/database';
+import { VerificationDocuments } from '@/components/professional/verification-documents';
+import type {
+  Professional,
+  Profile,
+  VerificationDocumentType,
+} from '@/types/database';
 const statusLabel = {
   draft: 'Rascunho',
   pending_review: 'Aguardando verificação',
@@ -93,6 +98,18 @@ export default async function ProfessionalArea({
     redirect('/admin');
   }
   const locked = professional?.status === 'suspended';
+  const { data: verificationDocuments } = professional
+    ? await supabase
+        .from('professional_verification_documents')
+        .select('document_type')
+        .eq('professional_id', professional.id)
+    : { data: [] };
+  const verificationTypes = (verificationDocuments ?? []).map(
+    (document) => document.document_type as VerificationDocumentType,
+  );
+  const verificationComplete = ['identity', 'crp', 'selfie'].every((type) =>
+    verificationTypes.includes(type as VerificationDocumentType),
+  );
   let avatarPreviewUrl: string | null = null;
   if (professional?.avatar_path) {
     const { data } = await supabase.storage
@@ -128,7 +145,7 @@ export default async function ProfessionalArea({
           {professional?.status === 'pending_review'
             ? 'Nossa equipe analisará os dados antes da publicação.'
             : professional?.status === 'approved'
-              ? 'Você pode atualizar seus dados ou sua foto. Ao salvar, o cadastro voltará para verificação antes da nova publicação.'
+              ? 'Você pode atualizar seus dados, foto ou documentos. Qualquer alteração sujeita a revisão retirará o cadastro do catálogo até uma nova aprovação.'
               : professional?.status === 'suspended'
                 ? 'O cadastro foi retirado do catálogo. Entre em contato com a administração.'
                 : 'Preencha os dados profissionais abaixo.'}
@@ -229,10 +246,35 @@ export default async function ProfessionalArea({
         </label>
         {!locked && (
           <button className="button" type="submit">
-            Enviar para verificação
+            Salvar dados
           </button>
         )}
       </form>
+      <div className="surface professional-form verification-surface">
+        <VerificationDocuments
+          userId={user.id}
+          hasProfessional={Boolean(professional)}
+          initialTypes={verificationTypes}
+          disabled={locked}
+          requiresReview={professional?.status === 'approved'}
+        />
+        {!locked && professional && (
+          <form action={submitProfessionalVerification}>
+            <button
+              className="button"
+              type="submit"
+              disabled={!verificationComplete}
+            >
+              Enviar para verificação
+            </button>
+            {!verificationComplete && (
+              <p className="muted">
+                Envie os três itens obrigatórios para liberar o envio.
+              </p>
+            )}
+          </form>
+        )}
+      </div>
     </main>
   );
 }
