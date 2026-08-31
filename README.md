@@ -78,6 +78,22 @@ where id = (select id from auth.users where email = 'ADMIN@EXEMPLO.COM');
 
 Em **Authentication → URL Configuration**, defina a URL de produção e adicione `https://SEU-DOMINIO/auth/callback` às URLs de redirecionamento. Mantenha a confirmação de e-mail habilitada.
 
+Para a confirmação de cadastro funcionar com SSR mesmo quando o e-mail for
+aberto em outro navegador, configure o template **Authentication → Email
+Templates → Confirm sign up** com um link baseado em `token_hash`:
+
+```html
+<a
+  href="{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=email&next=/area-profissional"
+>
+  Confirmar e-mail
+</a>
+```
+
+O callback valida esse token no Supabase com o tipo `email`. Em caso de
+confirmação válida, direciona para a área profissional quando uma sessão é
+criada ou mostra uma mensagem positiva na página de entrada.
+
 Para a recuperação funcionar mesmo quando o e-mail é aberto em outro
 navegador, configure o template **Authentication → Email Templates → Reset
 Password** com um link baseado em `token_hash`:
@@ -90,8 +106,9 @@ Password** com um link baseado em `token_hash`:
 </a>
 ```
 
-A rota aceita somente o tipo `recovery` e restringe `next` a caminhos internos,
-evitando redirecionamentos para outros domínios.
+A rota aceita `email` para confirmação e `recovery` para redefinição de senha,
+em tratamentos separados. O parâmetro `next` continua restrito a caminhos
+internos, evitando redirecionamentos para outros domínios.
 
 Antes de produção, revise papéis administrativos, verificação profissional, consentimento, retenção e exclusão de conteúdo sensível.
 
