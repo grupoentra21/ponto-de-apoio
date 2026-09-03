@@ -147,6 +147,13 @@ export default async function AdminPage() {
                 <td>
                   <Link
                     className="verification-link"
+                    href={`/admin/profissionais/${row.id}`}
+                  >
+                    Ver cadastro completo
+                  </Link>
+                  <br />
+                  <Link
+                    className="verification-link"
                     href={`/admin/profissionais/${row.id}/verificacao`}
                   >
                     Ver documentos ({verificationTypes.get(row.id)?.size ?? 0}
