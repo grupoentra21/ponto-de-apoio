@@ -2,6 +2,7 @@ import { requireUser } from '@/lib/auth';
 import { signOut } from '@/app/auth/actions';
 import { saveProfessional, submitProfessionalVerification } from './actions';
 import { AvatarUpload } from '@/components/professional/avatar-upload';
+import { CrpNumberInput } from '@/components/professional/crp-number-input';
 import { VerificationDocuments } from '@/components/professional/verification-documents';
 import type {
   Professional,
@@ -163,12 +164,9 @@ export default async function ProfessionalArea({
         <div className="form-grid">
           <label>
             Número do CRP
-            <input
-              name="registrationNumber"
-              required
+            <CrpNumberInput
               defaultValue={professional?.registration_number ?? ''}
               disabled={locked}
-              placeholder="123456"
             />
           </label>
           <label>

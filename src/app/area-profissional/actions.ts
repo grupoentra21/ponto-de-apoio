@@ -90,7 +90,7 @@ export async function saveProfessional(form: FormData) {
   const mode = value(form, 'serviceMode');
   const avatarPath = value(form, 'avatarPath');
   if (
-    !registrationNumber ||
+    !/^\d+$/.test(registrationNumber) ||
     !/^CRP\s*\d{2}$/i.test(region) ||
     !['online', 'in_person', 'hybrid'].includes(mode) ||
     (state && !/^[A-Z]{2}$/.test(state))
