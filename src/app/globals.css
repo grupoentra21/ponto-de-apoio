@@ -535,6 +535,52 @@ td {
   background-size: cover;
   font-weight: 700;
 }
+.admin-professional-details {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  gap: 2rem;
+  padding: clamp(1.25rem, 4vw, 2rem);
+}
+.admin-profile-photo {
+  width: 160px;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background-color: var(--sage);
+  background-position: center;
+  background-size: cover;
+  font-size: 2rem;
+  font-weight: 700;
+}
+.admin-professional-details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem 2rem;
+  margin: 0;
+}
+.admin-professional-details-grid div {
+  min-width: 0;
+}
+.admin-professional-details-grid dt {
+  margin-bottom: 0.35rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.admin-professional-details-grid dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.admin-professional-details-bio {
+  grid-column: 1 / -1;
+}
+.admin-professional-details-bio dd {
+  white-space: pre-wrap;
+}
+.admin-professional-details-actions {
+  grid-column: 2;
+}
 .button.small {
   min-height: 36px;
   padding: 0.4rem 0.75rem;
@@ -693,6 +739,17 @@ td {
   .verification-item,
   .identity-comparison {
     grid-template-columns: 1fr;
+  }
+  .admin-professional-details,
+  .admin-professional-details-grid {
+    grid-template-columns: 1fr;
+  }
+  .admin-professional-details-avatar {
+    display: grid;
+    justify-content: center;
+  }
+  .admin-professional-details-actions {
+    grid-column: 1;
   }
   .dashboard-heading {
     flex-direction: column;
