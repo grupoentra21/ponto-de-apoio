@@ -154,6 +154,18 @@ export function ChatDemo({ className = '' }: { className?: string }) {
             id="message"
             value={message}
             onChange={(event) => setMessage(event.target.value)}
+            onKeyDown={(event) => {
+              if (
+                event.key !== 'Enter' ||
+                event.shiftKey ||
+                event.nativeEvent.isComposing
+              )
+                return;
+
+              event.preventDefault();
+              if (isLoading || !message.trim()) return;
+              event.currentTarget.form?.requestSubmit();
+            }}
             disabled={isLoading}
             rows={2}
             placeholder="Escreva no seu ritmo…"
