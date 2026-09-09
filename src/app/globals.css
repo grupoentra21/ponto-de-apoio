@@ -187,10 +187,11 @@ select {
 }
 .chat-shell {
   margin-top: 28px;
+  border: 1.25px solid #4f8a68;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  height: clamp(520px, 70vh, 680px);
+  height: clamp(620px, 78vh, 800px);
 }
 .chat-messages {
   flex: 1;
@@ -209,7 +210,7 @@ select {
   gap: clamp(2rem, 5vw, 5rem);
 }
 .home-chat {
-  margin-top: 0;
+  margin-top: -20px;
 }
 .auth-page {
   min-height: 70vh;
@@ -769,5 +770,11 @@ td {
   }
   .home-chat form .button {
     width: 100%;
+  }
+  .home-chat {
+    margin-top: 0;
+  }
+  .chat-shell {
+    height: min(680px, 78dvh);
   }
 }
