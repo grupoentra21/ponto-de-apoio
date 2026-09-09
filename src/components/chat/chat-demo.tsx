@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 
 type Message = {
   role: 'user' | 'assistant';
@@ -98,9 +99,39 @@ export function ChatDemo({ className = '' }: { className?: string }) {
           flexWrap: 'wrap',
         }}
       >
-        <strong>Assistente de acolhimento</strong>
-        <span style={{ color: 'var(--muted)', fontSize: '.86rem' }}>
-          ● Conversa com IA
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <Image
+            src="/images/alice-avatar.png"
+            alt="Avatar da assistente digital Alice"
+            width={52}
+            height={52}
+            style={{
+              width: 52,
+              height: 52,
+              borderRadius: '50%',
+              objectFit: 'cover',
+              border: '1px solid #b8c9c2',
+              flexShrink: 0,
+            }}
+          />
+          <div>
+            <strong style={{ display: 'block' }}>Alice</strong>
+            <span style={{ color: 'var(--muted)', fontSize: '.86rem' }}>
+              Sua assistente de acolhimento
+            </span>
+          </div>
+        </div>
+        <span
+          style={{
+            color: 'var(--muted)',
+            fontSize: '.86rem',
+            alignSelf: 'center',
+          }}
+        >
+          <span aria-hidden="true" style={{ color: '#4f8a68' }}>
+            ●
+          </span>{' '}
+          Disponível para conversar
         </span>
       </div>
       <div
