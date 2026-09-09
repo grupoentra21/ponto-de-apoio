@@ -26,7 +26,10 @@ Limites obrigatórios:
 - Não prescreva nem recomende medicamentos ou mudanças de medicação.
 - Não substitua atendimento profissional.
 - Quando a pessoa pedir ajuda para encontrar um psicólogo, você pode usar a ferramenta buscar_profissionais para consultar exclusivamente o catálogo aprovado e publicado do Ponto de Apoio.
+- Após contexto suficiente, você também pode oferecer a busca quando apresentar profissionais cadastrados for claramente útil e natural. Não force recomendações em qualquer relato emocional; quando apropriado, pergunte primeiro se a pessoa quer conhecer profissionais relacionados ao que compartilhou.
+- Ao buscar, envie em context apenas um tema curto necessário para encontrar apresentações profissionais relevantes, nunca a conversa completa.
 - Apresente os resultados como profissionais compatíveis com os critérios informados, nunca como indicação clínica, ranking, garantia de adequação ou endosso.
+- Explique que qualquer compatibilidade é baseada somente nas informações públicas fornecidas pelo próprio profissional.
 - Não invente profissionais, CRP, especialidades, disponibilidade ou qualquer dado ausente no resultado da ferramenta.
 - Informe que a ordem dos resultados é neutra e não representa avaliação de qualidade.
 - Se não houver resultado, diga isso claramente e sugira ajustar cidade, UF ou modalidade.
@@ -34,6 +37,7 @@ Limites obrigatórios:
 
 Segurança:
 - Se houver indício de risco imediato, automutilação ou suicídio, responda com empatia e priorize a segurança. Oriente a pessoa a procurar agora o SAMU (192), uma emergência local ou o CVV (188), e a contatar alguém de confiança que possa ficar com ela. Pergunte de forma direta e breve se ela está em perigo imediato.
+- Em situações de risco imediato ou emergência, não substitua nem atrase esse protocolo para buscar ou recomendar profissionais do catálogo.
 - Não prometa sigilo, monitoramento ou intervenção de emergência.
 - Em qualquer dúvida, seja prudente e incentive apoio profissional humano.
 
@@ -65,8 +69,13 @@ const PROFESSIONAL_SEARCH_TOOL = {
         anyOf: [{ type: 'string', pattern: '^[A-Z]{2}$' }, { type: 'null' }],
         description: 'UF brasileira com duas letras, ou null.',
       },
+      context: {
+        anyOf: [{ type: 'string', maxLength: 240 }, { type: 'null' }],
+        description:
+          'Tema curto para buscar correspondência na apresentação profissional, ou null quando não houver contexto temático suficiente.',
+      },
     },
-    required: ['service_mode', 'city', 'state'],
+    required: ['service_mode', 'city', 'state', 'context'],
     additionalProperties: false,
   },
 };
@@ -75,6 +84,7 @@ type ProfessionalSearchArguments = {
   service_mode: 'online' | 'in_person' | 'hybrid' | null;
   city: string | null;
   state: string | null;
+  context: string | null;
 };
 
 type PublicProfessional = {
@@ -98,13 +108,16 @@ function parseSearchArguments(value: string): ProfessionalSearchArguments {
   const serviceMode = args.service_mode;
   const city = args.city;
   const state = args.state;
+  const context = args.context;
   const validModes = ['online', 'in_person', 'hybrid'];
 
   if (
     (serviceMode !== null &&
       (typeof serviceMode !== 'string' || !validModes.includes(serviceMode))) ||
     (city !== null && (typeof city !== 'string' || city.length > 120)) ||
-    (state !== null && (typeof state !== 'string' || !/^[A-Z]{2}$/.test(state)))
+    (state !== null &&
+      (typeof state !== 'string' || !/^[A-Z]{2}$/.test(state))) ||
+    (context !== null && (typeof context !== 'string' || context.length > 240))
   ) {
     throw new Error('Filtros de busca inválidos.');
   }
@@ -113,7 +126,92 @@ function parseSearchArguments(value: string): ProfessionalSearchArguments {
     service_mode: serviceMode as ProfessionalSearchArguments['service_mode'],
     city: typeof city === 'string' ? city.trim() || null : null,
     state: typeof state === 'string' ? state : null,
+    context: typeof context === 'string' ? context.trim() || null : null,
   };
+}
+
+const SEARCH_STOPWORDS = new Set([
+  'a',
+  'as',
+  'com',
+  'da',
+  'das',
+  'de',
+  'do',
+  'dos',
+  'e',
+  'em',
+  'esta',
+  'estou',
+  'eu',
+  'me',
+  'meu',
+  'minha',
+  'o',
+  'os',
+  'para',
+  'pela',
+  'pelo',
+  'por',
+  'que',
+  'um',
+  'uma',
+]);
+
+const SEARCH_EQUIVALENTS: Record<string, string[]> = {
+  cachorro: ['animal', 'pet'],
+  cachorros: ['animal', 'pet'],
+  cao: ['animal', 'pet'],
+  gato: ['animal', 'pet'],
+  gatos: ['animal', 'pet'],
+  pet: ['animal'],
+  pets: ['animal'],
+  morreu: ['luto'],
+  morte: ['luto'],
+  falecimento: ['luto'],
+};
+
+function normalizeSearchText(value: string) {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function relevantTerms(value: string) {
+  return normalizeSearchText(value)
+    .split(' ')
+    .filter((term) => term.length > 2 && !SEARCH_STOPWORDS.has(term));
+}
+
+function relevanceScore(context: string, bio: string | null) {
+  if (!bio) return 0;
+
+  const normalizedContext = normalizeSearchText(context);
+  const normalizedBio = normalizeSearchText(bio);
+  const contextTerms = relevantTerms(context);
+  const bioTerms = new Set(relevantTerms(bio));
+  let score =
+    normalizedContext.length >= 8 && normalizedBio.includes(normalizedContext)
+      ? 12
+      : 0;
+
+  for (const term of contextTerms) {
+    if (bioTerms.has(term)) score += 3;
+    for (const equivalent of SEARCH_EQUIVALENTS[term] ?? []) {
+      if (bioTerms.has(equivalent)) score += 2;
+    }
+  }
+
+  for (let index = 0; index < contextTerms.length - 1; index += 1) {
+    const expression = `${contextTerms[index]} ${contextTerms[index + 1]}`;
+    if (normalizedBio.includes(expression)) score += 5;
+  }
+
+  return score;
 }
 
 async function searchProfessionals(args: ProfessionalSearchArguments) {
@@ -142,17 +240,22 @@ async function searchProfessionals(args: ProfessionalSearchArguments) {
 
   const day = new Date().toISOString().slice(0, 10);
   const rows = (data ?? []) as unknown as PublicProfessional[];
-  const professionals = rows
-    .sort((a, b) =>
-      createHash('sha256')
-        .update(`${day}:${a.id}`)
-        .digest('hex')
-        .localeCompare(
-          createHash('sha256').update(`${day}:${b.id}`).digest('hex'),
-        ),
-    )
+  const neutralKey = (professional: PublicProfessional) =>
+    createHash('sha256').update(`${day}:${professional.id}`).digest('hex');
+  const scored = rows.map((professional) => ({
+    professional,
+    score: args.context ? relevanceScore(args.context, professional.bio) : 0,
+  }));
+  const hasRelevantMatches = scored.some(({ score }) => score > 0);
+  const professionals = scored
+    .sort((a, b) => {
+      if (hasRelevantMatches && b.score !== a.score) return b.score - a.score;
+      return neutralKey(a.professional).localeCompare(
+        neutralKey(b.professional),
+      );
+    })
     .slice(0, 8)
-    .map((professional) => ({
+    .map(({ professional }) => ({
       name: professional.profiles?.full_name ?? 'Profissional',
       crp: `${professional.registration_region} ${professional.registration_number}`,
       bio: professional.bio,
@@ -165,8 +268,9 @@ async function searchProfessionals(args: ProfessionalSearchArguments) {
   return {
     count: professionals.length,
     filters: args,
-    ordering:
-      'Rotação diária neutra; a ordem não representa qualidade ou recomendação clínica.',
+    ordering: hasRelevantMatches
+      ? 'Correspondência textual com a apresentação pública, com desempate neutro; a ordem não representa qualidade ou recomendação clínica.'
+      : 'Rotação diária neutra; a ordem não representa qualidade ou recomendação clínica.',
     professionals,
   };
 }
