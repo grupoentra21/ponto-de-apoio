@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { professionalProfilePath } from '@/lib/professional-public-profile';
 
 export type CatalogProfessional = {
   id: string;
@@ -45,8 +47,12 @@ export function ProfessionalCatalog({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const catalogReturnPath = searchParams.size
+    ? `${pathname}?${searchParams.toString()}`
+    : pathname;
   const states = useMemo(
-    () => uniqueOptions(professionals.map((professional) => professional.state)),
+    () =>
+      uniqueOptions(professionals.map((professional) => professional.state)),
     [professionals],
   );
   const initialModality = searchParams.get('modalidade');
@@ -67,7 +73,8 @@ export function ProfessionalCatalog({
         professionals
           .filter(
             (professional) =>
-              !state || normalize(professional.state ?? '') === normalize(state),
+              !state ||
+              normalize(professional.state ?? '') === normalize(state),
           )
           .map((professional) => professional.city),
       ),
@@ -79,7 +86,10 @@ export function ProfessionalCatalog({
   );
 
   useEffect(() => {
-    const timeout = window.setTimeout(() => setDebouncedQuery(query.trim()), 300);
+    const timeout = window.setTimeout(
+      () => setDebouncedQuery(query.trim()),
+      300,
+    );
     return () => window.clearTimeout(timeout);
   }, [query]);
 
@@ -201,14 +211,21 @@ export function ProfessionalCatalog({
       {filteredProfessionals.length === 0 ? (
         <div className="surface empty-state catalog-no-results">
           <h2>Nenhum profissional encontrado com esses critérios.</h2>
-          <button className="button secondary" type="button" onClick={clearFilters}>
+          <button
+            className="button secondary"
+            type="button"
+            onClick={clearFilters}
+          >
             Limpar filtros
           </button>
         </div>
       ) : (
         <div className="catalog-grid">
           {filteredProfessionals.map((professional) => (
-            <article className="surface professional-card" key={professional.id}>
+            <article
+              className="surface professional-card"
+              key={professional.id}
+            >
               <div
                 className={`avatar ${professional.avatar_url ? 'has-photo' : ''}`}
                 style={
@@ -247,14 +264,23 @@ export function ProfessionalCatalog({
                   ? ` · ${professional.city}/${professional.state}`
                   : ''}
               </p>
-              {professional.contact_email && (
-                <a
-                  className="button secondary"
-                  href={`mailto:${professional.contact_email}`}
+              <div className="professional-card-actions">
+                {professional.contact_email && (
+                  <a
+                    className="button secondary"
+                    href={`mailto:${professional.contact_email}`}
+                  >
+                    Solicitar contato
+                  </a>
+                )}
+                <Link
+                  className="button"
+                  href={`${professionalProfilePath(professional.name, professional.id)}?from=${encodeURIComponent(catalogReturnPath)}`}
+                  aria-label={`Ver perfil de ${professional.name}`}
                 >
-                  Solicitar contato
-                </a>
-              )}
+                  Ver perfil
+                </Link>
+              </div>
             </article>
           ))}
         </div>

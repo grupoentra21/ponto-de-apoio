@@ -5,6 +5,7 @@ import {
 } from '@/ai/professional-relevance';
 import type { ProfessionalSearchArguments } from '@/ai/tools';
 import { createClient as createSupabaseClient } from '@/lib/supabase/server';
+import { professionalProfilePath } from '@/lib/professional-public-profile';
 
 type PublicProfessional = {
   id: string;
@@ -53,15 +54,18 @@ export async function searchProfessionals(args: ProfessionalSearchArguments) {
       );
     })
     .slice(0, 8)
-    .map(({ professional }) => ({
-      name: professional.profiles?.full_name ?? 'Profissional',
-      crp: `${professional.registration_region} ${professional.registration_number}`,
-      bio: professional.bio,
-      service_mode: professional.service_mode,
-      city: professional.city,
-      state: professional.state,
-      catalog_url: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://pontodeapoio.social.br'}/profissionais`,
-    }));
+    .map(({ professional }) => {
+      const name = professional.profiles?.full_name ?? 'Profissional';
+      return {
+        name,
+        crp: `${professional.registration_region} ${professional.registration_number}`,
+        bio: professional.bio,
+        service_mode: professional.service_mode,
+        city: professional.city,
+        state: professional.state,
+        catalog_url: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://pontodeapoio.social.br'}${professionalProfilePath(name, professional.id)}`,
+      };
+    });
 
   return {
     count: professionals.length,
