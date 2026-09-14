@@ -1,10 +1,26 @@
+'use client';
+
 import Link from 'next/link';
+import { useFormStatus } from 'react-dom';
+
 type Props = {
   mode: 'login' | 'signup';
   action: (form: FormData) => Promise<void>;
   error?: string;
   message?: string;
 };
+
+function SubmitButton({ signup }: { signup: boolean }) {
+  const { pending } = useFormStatus();
+  const loginPending = !signup && pending;
+
+  return (
+    <button className="button" type="submit" disabled={loginPending}>
+      {loginPending ? 'Entrando...' : signup ? 'Criar acesso' : 'Entrar'}
+    </button>
+  );
+}
+
 export function AuthForm({ mode, action, error, message }: Props) {
   const signup = mode === 'signup';
   return (
@@ -41,9 +57,7 @@ export function AuthForm({ mode, action, error, message }: Props) {
           autoComplete={signup ? 'new-password' : 'current-password'}
         />
       </label>
-      <button className="button" type="submit">
-        {signup ? 'Criar acesso' : 'Entrar'}
-      </button>
+      <SubmitButton signup={signup} />
       <p>
         {signup ? (
           <>
