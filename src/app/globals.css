@@ -199,6 +199,18 @@ select {
   overflow-x: hidden;
   overflow-y: auto;
 }
+
+.chat-professional-link {
+  color: var(--teal);
+  display: inline-block;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.chat-professional-link:hover {
+  color: var(--coral-dark);
+}
 .home-hero {
   padding: clamp(3rem, 7vw, 6rem) 0 4rem;
   overflow: hidden;
