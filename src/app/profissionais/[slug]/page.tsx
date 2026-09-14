@@ -133,28 +133,27 @@ export default async function ProfessionalProfilePage({
                 .map((name) => name[0])
                 .join('')}
           </div>
-          <div>
+          <div className="professional-profile-summary">
             <p className="eyebrow">Perfil profissional verificado</p>
             <h1>{professional.name}</h1>
             <p className="muted">
               Psicólogo(a) · {professional.registrationRegion}{' '}
               {professional.registrationNumber}
             </p>
+            <div className="professional-profile-details">
+              <p>
+                <strong>Modalidade:</strong> {serviceMode}
+              </p>
+              {(professional.city || professional.state) && (
+                <p>
+                  <strong>Localização:</strong>{' '}
+                  {[professional.city, professional.state]
+                    .filter(Boolean)
+                    .join('/')}
+                </p>
+              )}
+            </div>
           </div>
-        </div>
-
-        <div className="professional-profile-details">
-          <p>
-            <strong>Modalidade:</strong> {serviceMode}
-          </p>
-          {(professional.city || professional.state) && (
-            <p>
-              <strong>Localização:</strong>{' '}
-              {[professional.city, professional.state]
-                .filter(Boolean)
-                .join('/')}
-            </p>
-          )}
         </div>
 
         {professional.bio && (
