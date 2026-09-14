@@ -7,19 +7,20 @@ import {
 export const metadata: Metadata = { title: 'Profissionais verificados' };
 type PublicProfessional = Omit<CatalogProfessional, 'name' | 'avatar_url'> & {
   id: string;
+  profile_id: string;
   avatar_path: string | null;
-  profiles: { full_name: string } | null;
 };
 export default async function ProfissionaisPage() {
   let rows: PublicProfessional[] = [];
   let unavailable = false;
   const avatarUrls = new Map<string, string>();
+  const profileNames = new Map<string, string>();
   try {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from('professionals')
       .select(
-        'id,registration_number,registration_region,bio,service_mode,city,state,contact_email,avatar_path,profiles!professionals_profile_id_fkey(full_name)',
+        'id,profile_id,registration_number,registration_region,bio,service_mode,city,state,contact_email,avatar_path',
       )
       .eq('status', 'approved')
       .eq('is_published', true)
@@ -27,6 +28,16 @@ export default async function ProfissionaisPage() {
     if (error) unavailable = true;
     else {
       rows = (data ?? []) as unknown as PublicProfessional[];
+      const profileIds = rows.map((row) => row.profile_id);
+      if (profileIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id,full_name')
+          .in('id', profileIds);
+        profiles?.forEach((profile) => {
+          profileNames.set(profile.id, profile.full_name);
+        });
+      }
       const paths = rows.flatMap((row) =>
         row.avatar_path ? [row.avatar_path] : [],
       );
@@ -78,7 +89,7 @@ export default async function ProfissionaisPage() {
         <ProfessionalCatalog
           professionals={rows.map((professional) => ({
             id: professional.id,
-            name: professional.profiles?.full_name ?? 'Profissional',
+            name: profileNames.get(professional.profile_id) ?? 'Profissional',
             registration_number: professional.registration_number,
             registration_region: professional.registration_region,
             bio: professional.bio,
