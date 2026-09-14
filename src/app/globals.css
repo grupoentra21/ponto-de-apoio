@@ -603,6 +603,35 @@ td {
   gap: 1.25rem;
   margin-top: 2rem;
 }
+.catalog-filters {
+  margin-top: 2rem;
+}
+.catalog-filters label {
+  gap: 0.4rem;
+}
+.catalog-search {
+  width: 100%;
+}
+.catalog-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  gap: 1rem;
+  align-items: end;
+  margin-top: 1rem;
+}
+.catalog-clear {
+  white-space: nowrap;
+}
+.catalog-count {
+  margin: 1.25rem 0 0;
+  color: var(--muted);
+}
+.catalog-no-results {
+  margin-top: 1.25rem;
+}
+.catalog-no-results h2 {
+  margin-top: 0;
+}
 .professional-card,
 .empty-state {
   padding: 1.5rem;
@@ -721,6 +750,12 @@ td {
   color: var(--muted);
 }
 @media (max-width: 720px) {
+  .catalog-filter-grid {
+    grid-template-columns: 1fr;
+  }
+  .catalog-clear {
+    width: 100%;
+  }
   .brand-logo {
     width: 164px;
   }
