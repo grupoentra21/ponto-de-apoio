@@ -32,6 +32,16 @@ export function ChatDemo({ className = '' }: { className?: string }) {
     }
   }, [messages, isLoading]);
 
+  function startNewConversation() {
+    if (!window.confirm('Deseja apagar esta conversa e começar novamente?')) {
+      return;
+    }
+
+    setMessages([initialMessage]);
+    setMessage('');
+    setError('');
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const content = message.trim();
@@ -121,18 +131,29 @@ export function ChatDemo({ className = '' }: { className?: string }) {
             </span>
           </div>
         </div>
-        <span
+        <div
           style={{
-            color: 'var(--muted)',
-            fontSize: '.86rem',
-            alignSelf: 'center',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            flexWrap: 'wrap',
           }}
         >
-          <span aria-hidden="true" style={{ color: '#4f8a68' }}>
-            ●
-          </span>{' '}
-          Disponível para conversar
-        </span>
+          <span style={{ color: 'var(--muted)', fontSize: '.86rem' }}>
+            <span aria-hidden="true" style={{ color: '#4f8a68' }}>
+              ●
+            </span>{' '}
+            Disponível para conversar
+          </span>
+          <button
+            className="button secondary small"
+            type="button"
+            onClick={startNewConversation}
+            disabled={isLoading}
+          >
+            Nova conversa
+          </button>
+        </div>
       </div>
       <div
         ref={messagesRef}
@@ -217,6 +238,16 @@ export function ChatDemo({ className = '' }: { className?: string }) {
             {isLoading ? 'Enviando…' : 'Enviar'}
           </button>
         </div>
+        <p
+          style={{
+            color: 'var(--muted)',
+            margin: '8px 0 0',
+            fontSize: '.82rem',
+          }}
+        >
+          Evite compartilhar dados pessoais ou informações sensíveis
+          desnecessárias.
+        </p>
         <p
           aria-live="polite"
           style={{
