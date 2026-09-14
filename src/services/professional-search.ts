@@ -63,7 +63,7 @@ export async function searchProfessionals(args: ProfessionalSearchArguments) {
         service_mode: professional.service_mode,
         city: professional.city,
         state: professional.state,
-        catalog_url: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://pontodeapoio.social.br'}${professionalProfilePath(name, professional.id)}`,
+        catalog_url: professionalProfilePath(name, professional.id),
       };
     });
 

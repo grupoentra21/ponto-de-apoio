@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
+import { splitProfessionalProfileLinks } from '@/lib/chat-professional-links';
 
 type Message = {
   role: 'user' | 'assistant';
@@ -182,7 +183,24 @@ export function ChatDemo({ className = '' }: { className?: string }) {
               overflowWrap: 'anywhere',
             }}
           >
-            {item.content}
+            {item.role === 'assistant'
+              ? splitProfessionalProfileLinks(item.content).map(
+                  (segment, segmentIndex) =>
+                    segment.type === 'professional-profile' ? (
+                      <a
+                        className="chat-professional-link"
+                        href={segment.href}
+                        key={`${segment.href}-${segmentIndex}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Ver perfil profissional
+                      </a>
+                    ) : (
+                      <span key={`text-${segmentIndex}`}>{segment.content}</span>
+                    ),
+                )
+              : item.content}
           </div>
         ))}
         {isLoading && (
