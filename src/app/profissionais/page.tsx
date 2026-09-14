@@ -1,15 +1,12 @@
 import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
+import {
+  ProfessionalCatalog,
+  type CatalogProfessional,
+} from '@/components/professional/professional-catalog';
 export const metadata: Metadata = { title: 'Profissionais verificados' };
-type PublicProfessional = {
+type PublicProfessional = Omit<CatalogProfessional, 'name' | 'avatar_url'> & {
   id: string;
-  registration_number: string;
-  registration_region: string;
-  bio: string | null;
-  service_mode: string;
-  city: string | null;
-  state: string | null;
-  contact_email: string | null;
   avatar_path: string | null;
   profiles: { full_name: string } | null;
 };
@@ -77,65 +74,24 @@ export default async function ProfissionaisPage() {
           </p>
         </div>
       )}
-      <div className="catalog-grid">
-        {rows.map((p) => (
-          <article className="surface professional-card" key={p.id}>
-            <div
-              className={`avatar ${p.avatar_path && avatarUrls.get(p.avatar_path) ? 'has-photo' : ''}`}
-              style={
-                p.avatar_path && avatarUrls.get(p.avatar_path)
-                  ? {
-                      backgroundImage: `url("${avatarUrls.get(p.avatar_path)}")`,
-                    }
-                  : undefined
-              }
-              role={
-                p.avatar_path && avatarUrls.get(p.avatar_path)
-                  ? 'img'
-                  : undefined
-              }
-              aria-label={
-                p.avatar_path && avatarUrls.get(p.avatar_path)
-                  ? `Foto de ${p.profiles?.full_name ?? 'profissional'}`
-                  : undefined
-              }
-              aria-hidden={
-                p.avatar_path && avatarUrls.get(p.avatar_path)
-                  ? undefined
-                  : true
-              }
-            >
-              {(!p.avatar_path || !avatarUrls.get(p.avatar_path)) &&
-                (p.profiles?.full_name ?? 'P')
-                  .split(' ')
-                  .slice(0, 2)
-                  .map((n) => n[0])
-                  .join('')}
-            </div>
-            <h2>{p.profiles?.full_name}</h2>
-            <p className="muted">
-              Psicólogo(a) · {p.registration_region} {p.registration_number}
-            </p>
-            <p>{p.bio}</p>
-            <p className="muted">
-              {p.service_mode === 'online'
-                ? 'Online'
-                : p.service_mode === 'in_person'
-                  ? 'Presencial'
-                  : 'Online e presencial'}
-              {p.city ? ` · ${p.city}/${p.state}` : ''}
-            </p>
-            {p.contact_email && (
-              <a
-                className="button secondary"
-                href={`mailto:${p.contact_email}`}
-              >
-                Solicitar contato
-              </a>
-            )}
-          </article>
-        ))}
-      </div>
+      {!unavailable && rows.length > 0 && (
+        <ProfessionalCatalog
+          professionals={rows.map((professional) => ({
+            id: professional.id,
+            name: professional.profiles?.full_name ?? 'Profissional',
+            registration_number: professional.registration_number,
+            registration_region: professional.registration_region,
+            bio: professional.bio,
+            service_mode: professional.service_mode,
+            city: professional.city,
+            state: professional.state,
+            contact_email: professional.contact_email,
+            avatar_url: professional.avatar_path
+              ? (avatarUrls.get(professional.avatar_path) ?? null)
+              : null,
+          }))}
+        />
+      )}
     </section>
   );
 }
