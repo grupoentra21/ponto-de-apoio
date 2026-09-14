@@ -18,7 +18,15 @@ export function Footer() {
           fontSize: '.9rem',
         }}
       >
-        <span>© {new Date().getFullYear()} Ponto de Apoio</span>
+        <span>
+          © {new Date().getFullYear()} Ponto de Apoio ·{' '}
+          <a
+            href="mailto:contato@pontodeapoio.social.br"
+            style={{ color: 'inherit' }}
+          >
+            contato@pontodeapoio.social.br
+          </a>
+        </span>
         <span>
           Orientação inicial — não substitui atendimento profissional.
         </span>
