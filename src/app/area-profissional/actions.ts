@@ -85,10 +85,21 @@ export async function beginProfessionalRevision() {
 export async function saveProfessional(form: FormData) {
   const { supabase, user } = await requireUser();
   const registrationNumber = value(form, 'registrationNumber');
+  const phoneDigits = value(form, 'phoneNumber').replace(/\D/g, '');
+  const phoneNumber =
+    phoneDigits.length === 0
+      ? null
+      : /^\d{10,11}$/.test(phoneDigits)
+        ? `55${phoneDigits}`
+        : /^55\d{10,11}$/.test(phoneDigits)
+          ? phoneDigits
+          : undefined;
   const region = value(form, 'registrationRegion').toUpperCase();
   const state = value(form, 'state').toUpperCase();
   const mode = value(form, 'serviceMode');
   const avatarPath = value(form, 'avatarPath');
+  if (phoneNumber === undefined)
+    redirect('/area-profissional?erro=Informe um celular válido com DDD.');
   if (
     !/^\d+$/.test(registrationNumber) ||
     !/^CRP\s*\d{2}$/i.test(region) ||
@@ -119,6 +130,7 @@ export async function saveProfessional(form: FormData) {
     city: value(form, 'city') || null,
     state: state || null,
     contact_email: value(form, 'contactEmail') || user.email || null,
+    phone_number: phoneNumber,
     avatar_path: avatarPath === `${user.id}/avatar.webp` ? avatarPath : null,
     status: nextStatus,
     is_published: false,
