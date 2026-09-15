@@ -1,6 +1,10 @@
 'use server';
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/auth';
+import {
+  isValidProfessionalFullName,
+  normalizeProfessionalFullName,
+} from '@/lib/professional-profile-input';
 import type { VerificationDocumentType } from '@/types/database';
 
 const VERIFICATION_BUCKET = 'professional-verification';
@@ -84,6 +88,7 @@ export async function beginProfessionalRevision() {
 
 export async function saveProfessional(form: FormData) {
   const { supabase, user } = await requireUser();
+  const fullName = normalizeProfessionalFullName(value(form, 'fullName'));
   const registrationNumber = value(form, 'registrationNumber');
   const phoneDigits = value(form, 'phoneNumber').replace(/\D/g, '');
   const phoneNumber =
@@ -98,6 +103,10 @@ export async function saveProfessional(form: FormData) {
   const state = value(form, 'state').toUpperCase();
   const mode = value(form, 'serviceMode');
   const avatarPath = value(form, 'avatarPath');
+  if (!isValidProfessionalFullName(fullName))
+    redirect(
+      '/area-profissional?erro=Informe um nome completo com 2 a 120 caracteres.',
+    );
   if (phoneNumber === undefined)
     redirect('/area-profissional?erro=Informe um celular válido com DDD.');
   if (
@@ -107,43 +116,21 @@ export async function saveProfessional(form: FormData) {
     (state && !/^[A-Z]{2}$/.test(state))
   )
     redirect('/area-profissional?erro=Revise o CRP, modalidade e UF.');
-  const { data: current } = await supabase
-    .from('professionals')
-    .select('id,status')
-    .eq('profile_id', user.id)
-    .maybeSingle();
-  if (current && current.status === 'suspended')
+  const { error } = await supabase.rpc('save_own_professional_profile', {
+    p_full_name: fullName,
+    p_registration_number: registrationNumber,
+    p_registration_region: region.replace(/\s+/g, ' '),
+    p_bio: value(form, 'bio') || null,
+    p_service_mode: mode,
+    p_city: value(form, 'city') || null,
+    p_state: state || null,
+    p_contact_email: value(form, 'contactEmail') || user.email || null,
+    p_phone_number: phoneNumber,
+    p_avatar_path: avatarPath === `${user.id}/avatar.webp` ? avatarPath : null,
+  });
+  if (error)
     redirect(
-      '/area-profissional?erro=Este perfil está bloqueado para edição. Fale com a administração.',
-    );
-  const nextStatus =
-    current?.status === 'approved' || current?.status === 'pending_review'
-      ? 'pending_review'
-      : 'draft';
-  const payload = {
-    profile_id: user.id,
-    professional_type: 'Psicólogo(a)',
-    registration_number: registrationNumber,
-    registration_region: region.replace(/\s+/g, ' '),
-    bio: value(form, 'bio') || null,
-    service_mode: mode,
-    city: value(form, 'city') || null,
-    state: state || null,
-    contact_email: value(form, 'contactEmail') || user.email || null,
-    phone_number: phoneNumber,
-    avatar_path: avatarPath === `${user.id}/avatar.webp` ? avatarPath : null,
-    status: nextStatus,
-    is_published: false,
-    reviewed_by: null,
-    reviewed_at: null,
-    updated_at: new Date().toISOString(),
-  };
-  const result = current
-    ? await supabase.from('professionals').update(payload).eq('id', current.id)
-    : await supabase.from('professionals').insert(payload);
-  if (result.error)
-    redirect(
-      `/area-profissional?erro=${encodeURIComponent('Não foi possível salvar: ' + result.error.message)}`,
+      `/area-profissional?erro=${encodeURIComponent('Não foi possível salvar: ' + error.message)}`,
     );
   redirect('/area-profissional?mensagem=Dados profissionais salvos.');
 }
