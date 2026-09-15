@@ -164,6 +164,17 @@ export default async function ProfessionalArea({
         <h2>Dados para verificação</h2>
         <div className="form-grid">
           <label>
+            Nome completo
+            <input
+              name="fullName"
+              required
+              minLength={2}
+              maxLength={120}
+              defaultValue={profile?.full_name ?? ''}
+              disabled={locked}
+            />
+          </label>
+          <label>
             Número do CRP
             <CrpNumberInput
               defaultValue={professional?.registration_number ?? ''}
