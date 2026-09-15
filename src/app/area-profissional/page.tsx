@@ -231,6 +231,16 @@ export default async function ProfessionalArea({
               disabled={locked}
             />
           </label>
+          <label>
+            Celular profissional
+            <input
+              name="phoneNumber"
+              type="tel"
+              placeholder="(47) 99999-9999"
+              defaultValue={professional?.phone_number ?? ''}
+              disabled={locked}
+            />
+          </label>
         </div>
         <label>
           Apresentação profissional
