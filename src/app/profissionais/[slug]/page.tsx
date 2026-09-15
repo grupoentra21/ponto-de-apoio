@@ -5,6 +5,7 @@ import { cache } from 'react';
 import {
   isPublicProfessional,
   professionalIdFromSlug,
+  professionalWhatsAppUrl,
   safeProfessionalCatalogReturnPath,
 } from '@/lib/professional-public-profile';
 import { createClient } from '@/lib/supabase/server';
@@ -18,6 +19,7 @@ type PublicProfessional = {
   city: string | null;
   state: string | null;
   contact_email: string | null;
+  phone_number: string | null;
   avatar_path: string | null;
   status: string;
   is_published: boolean;
@@ -32,7 +34,7 @@ const getPublicProfessional = cache(async (slug: string) => {
   const { data, error } = await supabase
     .from('professionals')
     .select(
-      'id,registration_number,registration_region,bio,service_mode,city,state,contact_email,avatar_path,status,is_published,profiles!professionals_profile_id_fkey(full_name)',
+      'id,registration_number,registration_region,bio,service_mode,city,state,contact_email,phone_number,avatar_path,status,is_published,profiles!professionals_profile_id_fkey(full_name)',
     )
     .eq('id', id)
     .eq('status', 'approved')
@@ -60,6 +62,7 @@ const getPublicProfessional = cache(async (slug: string) => {
     city: professional.city,
     state: professional.state,
     contactEmail: professional.contact_email,
+    phoneNumber: professional.phone_number,
     avatarUrl,
   };
 });
@@ -99,6 +102,9 @@ export default async function ProfessionalProfilePage({
       : professional.serviceMode === 'in_person'
         ? 'Presencial'
         : 'Online e presencial';
+  const whatsAppUrl = professional.phoneNumber
+    ? professionalWhatsAppUrl(professional.phoneNumber)
+    : null;
 
   return (
     <section className="container professional-profile-page">
@@ -163,13 +169,27 @@ export default async function ProfessionalProfilePage({
           </div>
         )}
 
-        {professional.contactEmail && (
-          <a
-            className="button secondary"
-            href={`mailto:${professional.contactEmail}`}
-          >
-            Solicitar contato
-          </a>
+        {(professional.contactEmail || whatsAppUrl) && (
+          <div className="professional-profile-contact-actions">
+            {professional.contactEmail && (
+              <a
+                className="button secondary"
+                href={`mailto:${professional.contactEmail}`}
+              >
+                Enviar e-mail
+              </a>
+            )}
+            {whatsAppUrl && (
+              <a
+                className="button"
+                href={whatsAppUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Falar pelo WhatsApp
+              </a>
+            )}
+          </div>
         )}
 
         <p className="professional-profile-notice">
