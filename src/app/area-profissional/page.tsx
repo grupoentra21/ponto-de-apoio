@@ -3,6 +3,7 @@ import { signOut } from '@/app/auth/actions';
 import { saveProfessional, submitProfessionalVerification } from './actions';
 import { AvatarUpload } from '@/components/professional/avatar-upload';
 import { CrpNumberInput } from '@/components/professional/crp-number-input';
+import { ProfessionalSaveButton } from '@/components/professional/professional-save-button';
 import { VerificationDocuments } from '@/components/professional/verification-documents';
 import type {
   Professional,
@@ -252,11 +253,7 @@ export default async function ProfessionalArea({
             disabled={locked}
           />
         </label>
-        {!locked && (
-          <button className="button" type="submit">
-            Salvar dados
-          </button>
-        )}
+        {!locked && <ProfessionalSaveButton />}
       </form>
       <div className="surface professional-form verification-surface">
         <VerificationDocuments
