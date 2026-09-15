@@ -4,6 +4,7 @@ import {
   isPublicProfessional,
   professionalIdFromSlug,
   professionalProfilePath,
+  professionalWhatsAppUrl,
   safeProfessionalCatalogReturnPath,
   slugifyProfessionalName,
 } from './professional-public-profile.ts';
@@ -71,4 +72,15 @@ test('resolve o identificador sem depender do nome ou de sua unicidade', () => {
     professionalIdFromSlug('camila-ribeiro--identificador-invalido'),
     null,
   );
+});
+
+test('gera link do WhatsApp com telefone normalizado e mensagem codificada', () => {
+  assert.equal(
+    professionalWhatsAppUrl('5547999999999'),
+    `https://wa.me/5547999999999?text=${encodeURIComponent(
+      'Olá, encontrei seu perfil no Ponto de Apoio e gostaria de saber mais sobre seu atendimento.',
+    )}`,
+  );
+  assert.equal(professionalWhatsAppUrl('(47) 99999-9999'), null);
+  assert.equal(professionalWhatsAppUrl('https://site-malicioso.com'), null);
 });

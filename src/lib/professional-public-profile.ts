@@ -16,6 +16,15 @@ export function professionalProfilePath(name: string, id: string) {
   return `/profissionais/${slugifyProfessionalName(name)}--${id}`;
 }
 
+export function professionalWhatsAppUrl(phoneNumber: string) {
+  if (!/^55[0-9]{10,11}$/.test(phoneNumber)) return null;
+
+  const message =
+    'Olá, encontrei seu perfil no Ponto de Apoio e gostaria de saber mais sobre seu atendimento.';
+
+  return `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+}
+
 export function professionalIdFromSlug(slug: string) {
   return slug.match(PROFESSIONAL_ID_PATTERN)?.[1] ?? null;
 }
