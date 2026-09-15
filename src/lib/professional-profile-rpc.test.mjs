@@ -32,6 +32,8 @@ test('RPC validates the full name and updates only the caller profile', () => {
     migration,
     /update public\.profiles[\s\S]*where id = current_user_id/,
   );
+  assert.match(migration, /get diagnostics profile_rows_updated = row_count/);
+  assert.match(migration, /if profile_rows_updated <> 1 then/);
 });
 
 test('RPC rejects suspended records and applies the existing review transition', () => {
@@ -49,6 +51,18 @@ test('RPC supports both insert and update in one database function', () => {
   assert.match(migration, /insert into public\.professionals/);
   assert.match(migration, /update public\.professionals/);
   assert.match(migration, /where profile_id = current_user_id/);
+});
+
+test('RPC uses explicit state instead of the implicit FOUND variable', () => {
+  assert.doesNotMatch(migration, /\bfound\b/i);
+  assert.match(
+    migration,
+    /current_professional\.id is not null[\s\S]*current_professional\.status = 'suspended'/,
+  );
+  assert.match(
+    migration,
+    /when current_professional\.id is not null[\s\S]*current_professional\.status in \('approved', 'pending_review'\)/,
+  );
 });
 
 test('RPC uses invoker rights and is executable only by authenticated', () => {

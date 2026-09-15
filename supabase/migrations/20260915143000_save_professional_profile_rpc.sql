@@ -23,6 +23,7 @@ declare
   normalized_state text := nullif(upper(trim(p_state)), '');
   next_status public.professional_status;
   current_timestamp_value timestamptz := now();
+  profile_rows_updated integer;
 begin
   if current_user_id is null then
     raise exception using errcode = '42501', message = 'Usuário não autenticado.';
@@ -54,12 +55,14 @@ begin
   where profile_id = current_user_id
   for update;
 
-  if found and current_professional.status = 'suspended' then
+  if current_professional.id is not null
+    and current_professional.status = 'suspended' then
     raise exception using errcode = '42501', message = 'Este perfil está bloqueado para edição. Fale com a administração.';
   end if;
 
   next_status := case
-    when found and current_professional.status in ('approved', 'pending_review')
+    when current_professional.id is not null
+      and current_professional.status in ('approved', 'pending_review')
       then 'pending_review'::public.professional_status
     else 'draft'::public.professional_status
   end;
@@ -69,7 +72,9 @@ begin
       updated_at = current_timestamp_value
   where id = current_user_id;
 
-  if not found then
+  get diagnostics profile_rows_updated = row_count;
+
+  if profile_rows_updated <> 1 then
     raise exception using errcode = 'P0002', message = 'Perfil do usuário não encontrado.';
   end if;
 
