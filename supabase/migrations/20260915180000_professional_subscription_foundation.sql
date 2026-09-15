@@ -177,18 +177,27 @@ begin
   insert into public.professional_subscriptions (
     professional_id,
     status,
+    activation_source,
+    activated_at,
+    activated_by_admin,
     admin_note,
     cancel_at_period_end,
     updated_at
   ) values (
     p_professional_id,
     'inactive',
+    null,
+    null,
+    null,
     normalized_note,
     false,
     now()
   )
   on conflict (professional_id) do update
   set status = 'inactive',
+      activation_source = null,
+      activated_at = null,
+      activated_by_admin = null,
       admin_note = normalized_note,
       cancel_at_period_end = false,
       updated_at = now();

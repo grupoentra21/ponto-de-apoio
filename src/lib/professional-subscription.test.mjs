@@ -46,6 +46,20 @@ test('activation records its source, acting admin and audit event', () => {
   assert.match(migration, /'subscription_deactivated'/);
 });
 
+test('deactivation clears the current activation metadata', () => {
+  const deactivationFunction = migration.slice(
+    migration.indexOf('create function public.admin_deactivate_professional_subscription'),
+  );
+
+  assert.match(
+    deactivationFunction,
+    /'inactive',\s*null,\s*null,\s*null,\s*normalized_note/i,
+  );
+  assert.match(deactivationFunction, /activation_source = null/i);
+  assert.match(deactivationFunction, /activated_at = null/i);
+  assert.match(deactivationFunction, /activated_by_admin = null/i);
+});
+
 test('migration neither backfills subscriptions nor changes publication', () => {
   assert.doesNotMatch(
     migration,
