@@ -8,6 +8,7 @@ import { VerificationDocuments } from '@/components/professional/verification-do
 import type {
   Professional,
   Profile,
+  SubscriptionStatus,
   VerificationDocumentType,
 } from '@/types/database';
 const statusLabel = {
@@ -16,6 +17,12 @@ const statusLabel = {
   approved: 'Aprovado',
   rejected: 'Revisão necessária',
   suspended: 'Suspenso',
+};
+const subscriptionStatusLabel: Record<SubscriptionStatus, string> = {
+  inactive: 'Inativa',
+  active: 'Ativa',
+  past_due: 'Pagamento pendente',
+  canceled: 'Cancelada',
 };
 
 const crpRegions = [
@@ -100,6 +107,13 @@ export default async function ProfessionalArea({
     redirect('/admin');
   }
   const locked = professional?.status === 'suspended';
+  const { data: subscription } = professional
+    ? await supabase
+        .from('professional_subscriptions')
+        .select('status')
+        .eq('professional_id', professional.id)
+        .maybeSingle()
+    : { data: null };
   const { data: verificationDocuments } = professional
     ? await supabase
         .from('professional_verification_documents')
@@ -151,6 +165,17 @@ export default async function ProfessionalArea({
               : professional?.status === 'suspended'
                 ? 'O cadastro foi retirado do catálogo. Entre em contato com a administração.'
                 : 'Preencha os dados profissionais abaixo.'}
+        </p>
+      </div>
+      <div className="status-card subscription-status-card">
+        <strong>Assinatura</strong>
+        <p>
+          Status:{' '}
+          <span className="subscription-status-value">
+            {subscriptionStatusLabel[
+              (subscription?.status ?? 'inactive') as SubscriptionStatus
+            ]}
+          </span>
         </p>
       </div>
       <form action={saveProfessional} className="surface professional-form">

@@ -75,3 +75,39 @@ export async function deleteProfessional(form: FormData) {
   revalidatePath('/admin');
   revalidatePath('/profissionais');
 }
+
+export async function changeProfessionalSubscription(form: FormData) {
+  const professionalId = String(form.get('professionalId') ?? '');
+  const action = String(form.get('subscriptionAction') ?? '');
+  const adminNote = String(form.get('adminNote') ?? '').trim();
+  if (!professionalId || !['activate', 'deactivate'].includes(action)) return;
+
+  const { supabase } = await requireAdmin();
+  const rpcName =
+    action === 'activate'
+      ? 'admin_activate_professional_subscription'
+      : 'admin_deactivate_professional_subscription';
+  const { error } = await supabase.rpc(rpcName, {
+    p_professional_id: professionalId,
+    p_admin_note: adminNote || null,
+  });
+
+  const destination = `/admin/profissionais/${professionalId}`;
+  if (error) {
+    const { redirect } = await import('next/navigation');
+    redirect(
+      `${destination}?erro=${encodeURIComponent('Não foi possível alterar a assinatura.')}`,
+    );
+  }
+
+  revalidatePath('/admin');
+  revalidatePath(destination);
+  const { redirect } = await import('next/navigation');
+  redirect(
+    `${destination}?mensagem=${encodeURIComponent(
+      action === 'activate'
+        ? 'Assinatura ativada.'
+        : 'Assinatura desativada.',
+    )}`,
+  );
+}

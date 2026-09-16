@@ -3,6 +3,12 @@ export type ServiceMode = 'online' | 'in_person' | 'hybrid';
 export type ProfessionalStatus =
   'draft' | 'pending_review' | 'approved' | 'rejected' | 'suspended';
 export type VerificationDocumentType = 'identity' | 'crp' | 'selfie';
+export type SubscriptionStatus =
+  | 'inactive'
+  | 'active'
+  | 'past_due'
+  | 'canceled';
+export type SubscriptionActivationSource = 'admin' | 'payment';
 export type Profile = {
   id: string;
   full_name: string;
@@ -39,6 +45,23 @@ export type ProfessionalVerificationDocument = {
   size_bytes: number;
   uploaded_by: string;
   consent_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+export type ProfessionalSubscription = {
+  id: string;
+  professional_id: string;
+  status: SubscriptionStatus;
+  activation_source: SubscriptionActivationSource | null;
+  activated_at: string | null;
+  activated_by_admin: string | null;
+  admin_note: string | null;
+  provider: string | null;
+  provider_customer_id: string | null;
+  provider_subscription_id: string | null;
+  current_period_start: string | null;
+  current_period_end: string | null;
+  cancel_at_period_end: boolean;
   created_at: string;
   updated_at: string;
 };

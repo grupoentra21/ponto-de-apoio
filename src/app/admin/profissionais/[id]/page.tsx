@@ -1,9 +1,11 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { requireAdmin } from '@/lib/auth';
+import { SubscriptionActions } from '@/components/admin/subscription-actions';
 import type {
   ProfessionalStatus,
   ServiceMode,
+  SubscriptionStatus,
   VerificationDocumentType,
 } from '@/types/database';
 
@@ -37,6 +39,13 @@ const serviceModeLabels: Record<ServiceMode, string> = {
   hybrid: 'Híbrido',
 };
 
+const subscriptionStatusLabels: Record<SubscriptionStatus, string> = {
+  inactive: 'Inativa',
+  active: 'Ativa',
+  past_due: 'Pagamento pendente',
+  canceled: 'Cancelada',
+};
+
 const requiredDocumentTypes: VerificationDocumentType[] = [
   'identity',
   'crp',
@@ -45,10 +54,13 @@ const requiredDocumentTypes: VerificationDocumentType[] = [
 
 export default async function AdminProfessionalDetailsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ erro?: string; mensagem?: string }>;
 }) {
   const { id } = await params;
+  const feedback = await searchParams;
   const { supabase } = await requireAdmin();
   const { data } = await supabase
     .from('professionals')
@@ -61,6 +73,11 @@ export default async function AdminProfessionalDetailsPage({
   if (!data) notFound();
 
   const professional = data as unknown as ProfessionalDetails;
+  const { data: subscription } = await supabase
+    .from('professional_subscriptions')
+    .select('status,activation_source,activated_at,admin_note')
+    .eq('professional_id', id)
+    .maybeSingle();
   const { data: verificationDocuments } = await supabase
     .from('professional_verification_documents')
     .select('document_type')
@@ -93,6 +110,15 @@ export default async function AdminProfessionalDetailsPage({
           <p>Informações fornecidas pelo profissional para análise.</p>
         </div>
       </div>
+
+      {feedback.erro && (
+        <p className="form-alert error" role="alert">
+          {feedback.erro}
+        </p>
+      )}
+      {feedback.mensagem && (
+        <p className="form-alert success">{feedback.mensagem}</p>
+      )}
 
       <section className="surface admin-professional-details">
         <div className="admin-professional-details-avatar">
@@ -162,6 +188,18 @@ export default async function AdminProfessionalDetailsPage({
             <dd>{professional.is_published ? 'Publicado' : 'Não publicado'}</dd>
           </div>
           <div>
+            <dt>Assinatura</dt>
+            <dd>
+              <span
+                className={`status-badge status-subscription-${subscription?.status ?? 'inactive'}`}
+              >
+                {subscriptionStatusLabels[
+                  (subscription?.status ?? 'inactive') as SubscriptionStatus
+                ]}
+              </span>
+            </dd>
+          </div>
+          <div>
             <dt>Documentos de verificação</dt>
             <dd>
               {documentsComplete
@@ -182,6 +220,17 @@ export default async function AdminProfessionalDetailsPage({
           >
             Ver documentos e verificação
           </Link>
+        </div>
+        <div className="admin-professional-subscription">
+          <h2>Assinatura</h2>
+          <p className="muted">
+            Ativação manual administrativa. A publicação ainda segue as regras
+            atuais do cadastro profissional.
+          </p>
+          <SubscriptionActions
+            professionalId={professional.id}
+            active={subscription?.status === 'active'}
+          />
         </div>
       </section>
     </main>
