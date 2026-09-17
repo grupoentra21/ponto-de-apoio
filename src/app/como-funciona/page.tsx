@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { HowItWorks } from '@/components/marketing/how-it-works';
 
 export const metadata: Metadata = { title: 'Como funciona' };
@@ -16,9 +15,6 @@ export default function ComoFuncionaPage() {
             compreender possibilidades de cuidado e conhecer profissionais de
             saúde mental com autonomia.
           </p>
-          <Link className="button" href="/acolhimento">
-            Conversar agora
-          </Link>
         </div>
       </section>
       <section className="how-it-works-page">
