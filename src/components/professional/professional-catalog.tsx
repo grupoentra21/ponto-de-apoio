@@ -15,10 +15,51 @@ export type CatalogProfessional = {
   city: string | null;
   state: string | null;
   contact_email: string | null;
+  phone_number: string | null;
   avatar_url: string | null;
 };
 
 type Modality = '' | 'online' | 'presencial';
+
+const WHATSAPP_MESSAGE =
+  'Olá! Encontrei seu perfil no Ponto de Apoio e gostaria de saber mais sobre seu atendimento.';
+
+function professionalWhatsAppUrl(phoneNumber: string | null) {
+  if (!phoneNumber) return null;
+
+  const digits = phoneNumber.replace(/\D/g, '');
+  const normalizedNumber =
+    digits.length === 10 || digits.length === 11
+      ? `55${digits}`
+      : digits.startsWith('55') &&
+          (digits.length === 12 || digits.length === 13)
+        ? digits
+        : null;
+
+  return normalizedNumber
+    ? `https://wa.me/${normalizedNumber}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`
+    : null;
+}
+
+function ProfessionalWhatsAppLink({
+  phoneNumber,
+}: {
+  phoneNumber: string | null;
+}) {
+  const whatsappUrl = professionalWhatsAppUrl(phoneNumber);
+  if (!whatsappUrl) return null;
+
+  return (
+    <a
+      className="button secondary"
+      href={whatsappUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      WhatsApp
+    </a>
+  );
+}
 
 function normalize(value: string) {
   return value
@@ -265,14 +306,9 @@ export function ProfessionalCatalog({
                   : ''}
               </p>
               <div className="professional-card-actions">
-                {professional.contact_email && (
-                  <a
-                    className="button secondary"
-                    href={`mailto:${professional.contact_email}`}
-                  >
-                    Solicitar contato
-                  </a>
-                )}
+                <ProfessionalWhatsAppLink
+                  phoneNumber={professional.phone_number}
+                />
                 <Link
                   className="button"
                   href={`${professionalProfilePath(professional.name, professional.id)}?from=${encodeURIComponent(catalogReturnPath)}`}
