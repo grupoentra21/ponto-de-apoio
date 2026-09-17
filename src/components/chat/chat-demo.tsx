@@ -15,12 +15,82 @@ const initialMessage: Message = {
     'Olá. Este pode ser um espaço para você organizar o que está sentindo. Você pode compartilhar apenas o que se sentir confortável. Como têm sido seus dias?',
 };
 
+const chatStorageKey = 'ponto-de-apoio:alice-chat';
+
+function isMessageHistory(value: unknown): value is Message[] {
+  return (
+    Array.isArray(value) &&
+    value.length > 0 &&
+    value.every((item) => {
+      if (typeof item !== 'object' || item === null) return false;
+
+      const record = item as Record<string, unknown>;
+      const keys = Object.keys(record);
+
+      return (
+        keys.length === 2 &&
+        keys.includes('role') &&
+        keys.includes('content') &&
+        (record.role === 'user' || record.role === 'assistant') &&
+        typeof record.content === 'string'
+      );
+    })
+  );
+}
+
 export function ChatDemo({ className = '' }: { className?: string }) {
   const [messages, setMessages] = useState<Message[]>([initialMessage]);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [hasRestoredMessages, setHasRestoredMessages] = useState(false);
   const messagesRef = useRef<HTMLDivElement>(null);
+  const skipNextStorageSave = useRef(false);
+
+  useEffect(() => {
+    let isActive = true;
+    let restoredMessages: Message[] = [initialMessage];
+
+    try {
+      const storedMessages = window.sessionStorage.getItem(chatStorageKey);
+
+      if (storedMessages) {
+        const parsedMessages: unknown = JSON.parse(storedMessages);
+
+        if (isMessageHistory(parsedMessages)) {
+          restoredMessages = parsedMessages;
+        }
+      }
+    } catch {
+      // Ignore unavailable storage or invalid persisted data.
+    }
+
+    queueMicrotask(() => {
+      if (!isActive) return;
+
+      setMessages(restoredMessages);
+      setHasRestoredMessages(true);
+    });
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!hasRestoredMessages) return;
+
+    if (skipNextStorageSave.current) {
+      skipNextStorageSave.current = false;
+      return;
+    }
+
+    try {
+      window.sessionStorage.setItem(chatStorageKey, JSON.stringify(messages));
+    } catch {
+      // Keep the chat usable when session storage is unavailable.
+    }
+  }, [hasRestoredMessages, messages]);
 
   useEffect(() => {
     const messagesElement = messagesRef.current;
@@ -38,6 +108,12 @@ export function ChatDemo({ className = '' }: { className?: string }) {
       return;
     }
 
+    skipNextStorageSave.current = true;
+    try {
+      window.sessionStorage.removeItem(chatStorageKey);
+    } catch {
+      // Keep the reset usable when session storage is unavailable.
+    }
     setMessages([initialMessage]);
     setMessage('');
     setError('');
