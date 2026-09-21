@@ -342,6 +342,13 @@ export function ProfessionalCatalog({
               key={professional.id}
             >
               <header className="professional-card-heading">
+                <h2>
+                  <Link
+                    href={`${professionalProfilePath(professional.name, professional.id)}?from=${encodeURIComponent(catalogReturnPath)}`}
+                  >
+                    {professional.name}
+                  </Link>
+                </h2>
                 <div
                   className={`avatar ${professional.avatar_url ? 'has-photo' : ''}`}
                   style={
@@ -365,23 +372,20 @@ export function ProfessionalCatalog({
                       .join('')}
                 </div>
                 <div className="professional-card-identity">
-                  <p className="professional-card-role">Psicólogo(a)</p>
-                  <h2>
-                    <Link
-                      href={`${professionalProfilePath(professional.name, professional.id)}?from=${encodeURIComponent(catalogReturnPath)}`}
-                    >
-                      {professional.name}
-                    </Link>
-                  </h2>
                   <p className="professional-card-registration">
-                    CRP {professional.registration_region}{' '}
+                    Psicólogo(a) · CRP{' '}
+                    {professional.registration_region.replace(/^CRP\s*/i, '')}{' '}
                     {professional.registration_number}
                   </p>
                 </div>
               </header>
               <dl className="professional-card-facts">
                 <div>
-                  <dt>Atendimento</dt>
+                  <dt>Especialidade:</dt>{' '}
+                  <dd>não informada. Consulte a apresentação abaixo.</dd>
+                </div>
+                <div>
+                  <dt>Modalidade:</dt>{' '}
                   <dd>
                     {professional.service_mode === 'online'
                       ? 'Online'
@@ -391,7 +395,7 @@ export function ProfessionalCatalog({
                   </dd>
                 </div>
                 <div>
-                  <dt>Localização</dt>
+                  <dt>Localização:</dt>{' '}
                   <dd>
                     {[professional.city, professional.state]
                       .filter(Boolean)
@@ -424,7 +428,7 @@ export function ProfessionalCatalog({
                 </div>
               )}
               <div className="professional-card-about">
-                <h3>Sobre o atendimento</h3>
+                <h3>Apresentação profissional</h3>
                 <p className="professional-card-bio">
                   {professional.bio ||
                     'Conheça mais sobre o atendimento no perfil profissional.'}
