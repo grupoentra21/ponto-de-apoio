@@ -43,9 +43,68 @@ export function ChatDemo({ className = '' }: { className?: string }) {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [hasRestoredMessages, setHasRestoredMessages] = useState(false);
+  const chatRef = useRef<HTMLDivElement>(null);
+  const fullscreenButtonRef = useRef<HTMLButtonElement>(null);
   const messagesRef = useRef<HTMLDivElement>(null);
   const skipNextStorageSave = useRef(false);
+
+  useEffect(() => {
+    if (!isFullscreen || !chatRef.current) return;
+
+    const chat = chatRef.current;
+    const fullscreenButton = fullscreenButtonRef.current;
+    const previousOverflow = document.body.style.overflow;
+    const background: Array<{ element: HTMLElement; inert: boolean }> = [];
+    let current: HTMLElement = chat;
+
+    // Keep keyboard and screen-reader navigation inside the expanded chat.
+    while (current.parentElement && current !== document.body) {
+      for (const sibling of current.parentElement.children) {
+        if (sibling instanceof HTMLElement && sibling !== current) {
+          background.push({ element: sibling, inert: sibling.inert });
+          sibling.inert = true;
+        }
+      }
+      current = current.parentElement;
+    }
+    document.body.style.overflow = 'hidden';
+    fullscreenButton?.focus({ preventScroll: true });
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setIsFullscreen(false);
+      }
+      if (event.key !== 'Tab') return;
+
+      const focusable = Array.from(
+        chat.querySelectorAll<HTMLElement>(
+          'button:not(:disabled), a[href], textarea:not(:disabled), [tabindex="0"]',
+        ),
+      ).filter((element) => element.getClientRects().length > 0);
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+      background.forEach(({ element, inert }) => {
+        element.inert = inert;
+      });
+      fullscreenButton?.focus({ preventScroll: true });
+    };
+  }, [isFullscreen]);
 
   useEffect(() => {
     let isActive = true;
@@ -175,8 +234,15 @@ export function ChatDemo({ className = '' }: { className?: string }) {
   }
 
   return (
-    <div className={`surface chat-shell ${className}`}>
+    <div
+      ref={chatRef}
+      className={`surface chat-shell ${className}${isFullscreen ? ' is-fullscreen' : ''}`}
+      role={isFullscreen ? 'dialog' : undefined}
+      aria-modal={isFullscreen ? true : undefined}
+      aria-label={isFullscreen ? 'Chat com Alice' : undefined}
+    >
       <div
+        className="chat-header"
         style={{
           padding: '1rem 1.25rem',
           borderBottom: '1px solid #dce5df',
@@ -208,15 +274,11 @@ export function ChatDemo({ className = '' }: { className?: string }) {
             </span>
           </div>
         </div>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-            flexWrap: 'wrap',
-          }}
-        >
-          <span style={{ color: 'var(--muted)', fontSize: '.86rem' }}>
+        <div className="chat-header-actions">
+          <span
+            className="chat-availability"
+            style={{ color: 'var(--muted)', fontSize: '.86rem' }}
+          >
             <span aria-hidden="true" style={{ color: '#4f8a68' }}>
               ●
             </span>{' '}
@@ -229,6 +291,41 @@ export function ChatDemo({ className = '' }: { className?: string }) {
             disabled={isLoading}
           >
             Nova conversa
+          </button>
+          <button
+            ref={fullscreenButtonRef}
+            className="button secondary chat-fullscreen-button"
+            type="button"
+            onClick={() => setIsFullscreen((current) => !current)}
+            aria-expanded={isFullscreen}
+            aria-label={
+              isFullscreen ? 'Sair da tela cheia' : 'Abrir chat em tela cheia'
+            }
+            title={
+              isFullscreen
+                ? 'Sair da tela cheia (Esc)'
+                : 'Abrir chat em tela cheia'
+            }
+          >
+            <svg
+              aria-hidden="true"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path
+                d={
+                  isFullscreen
+                    ? 'M8 3v5H3m13-5v5h5M3 16h5v5m13-5h-5v5'
+                    : 'M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5'
+                }
+              />
+            </svg>
           </button>
         </div>
       </div>
@@ -273,7 +370,9 @@ export function ChatDemo({ className = '' }: { className?: string }) {
                         Ver perfil profissional
                       </a>
                     ) : (
-                      <span key={`text-${segmentIndex}`}>{segment.content}</span>
+                      <span key={`text-${segmentIndex}`}>
+                        {segment.content}
+                      </span>
                     ),
                 )
               : item.content}

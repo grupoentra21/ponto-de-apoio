@@ -189,15 +189,70 @@ select {
   margin-top: 28px;
   border: 1.25px solid #4f8a68;
   overflow: hidden;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   height: clamp(620px, 78vh, 800px);
 }
 .chat-messages {
   flex: 1;
-  min-height: 0;
+  min-height: 80px;
   overflow-x: hidden;
   overflow-y: auto;
+}
+.chat-header,
+.chat-shell > form {
+  flex-shrink: 0;
+}
+.chat-header-actions {
+  display: grid;
+  grid-template-columns: auto 44px;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-left: auto;
+}
+.chat-shell textarea {
+  min-width: 0;
+  max-height: 25dvh;
+}
+.chat-availability {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  text-align: right;
+}
+.chat-fullscreen-button {
+  width: 44px;
+  min-height: 44px;
+  padding: 0;
+  flex-shrink: 0;
+}
+.chat-fullscreen-button:focus-visible {
+  outline: 3px solid var(--green);
+  outline-offset: 3px;
+}
+.chat-shell.is-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  width: 100%;
+  height: 100dvh;
+  margin: 0;
+  border-radius: 0;
+  background: var(--paper);
+  overflow-y: auto;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+.chat-shell.is-fullscreen .chat-messages {
+  min-height: 80px;
+  overscroll-behavior: contain;
+}
+.chat-shell.is-fullscreen form > div {
+  flex-direction: row !important;
+}
+.chat-shell.is-fullscreen form .button {
+  width: auto;
 }
 
 .chat-professional-link {
@@ -212,17 +267,25 @@ select {
   color: var(--coral-dark);
 }
 .home-hero {
-  padding: clamp(3rem, 7vw, 6rem) 0 4rem;
+  padding: clamp(1rem, 2.5vh, 1.75rem) 0 2rem;
   overflow: hidden;
 }
 .home-hero-grid {
   display: grid;
   grid-template-columns: minmax(290px, 0.78fr) minmax(440px, 1.22fr);
-  align-items: center;
+  align-items: start;
   gap: clamp(2rem, 5vw, 5rem);
 }
 .home-chat {
-  margin-top: -20px;
+  margin-top: 0;
+  height: min(760px, calc(100dvh - 128px));
+}
+.home-hero-copy h1 {
+  font-family: Georgia, serif;
+  font-size: clamp(2.4rem, min(4.4vw, 7.5dvh), 4rem);
+  line-height: 1.04;
+  letter-spacing: -0.045em;
+  margin: 1rem 0 1.5rem;
 }
 .auth-page {
   min-height: 70vh;
