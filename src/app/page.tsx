@@ -9,17 +9,7 @@ export default function Home() {
             <p className="eyebrow">
               Você não precisa encontrar o caminho sozinho
             </p>
-            <h1
-              style={{
-                fontFamily: 'Georgia,serif',
-                fontSize: 'clamp(2.8rem,6vw,5rem)',
-                lineHeight: 0.98,
-                letterSpacing: '-.045em',
-                margin: '1rem 0 1.5rem',
-              }}
-            >
-              Um primeiro passo para encontrar apoio.
-            </h1>
+            <h1>Um primeiro passo para encontrar apoio.</h1>
             <p
               style={{
                 color: 'var(--muted)',
