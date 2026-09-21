@@ -9,6 +9,10 @@ import {
   safeProfessionalCatalogReturnPath,
 } from '@/lib/professional-public-profile';
 import { createClient } from '@/lib/supabase/server';
+import {
+  professionalHashtags,
+  normalizeHashtag,
+} from '@/lib/professional-hashtags';
 
 type PublicProfessional = {
   id: string;
@@ -158,6 +162,20 @@ export default async function ProfessionalProfilePage({
                     .join('/')}
                 </p>
               )}
+            </div>
+            <div
+              className="professional-hashtags"
+              aria-label="Hashtags do profissional"
+            >
+              {professionalHashtags(professional.bio).map((tag) => (
+                <Link
+                  className="professional-hashtag"
+                  key={normalizeHashtag(tag)}
+                  href={`/profissionais?hashtag=${encodeURIComponent(normalizeHashtag(tag))}`}
+                >
+                  #{tag}
+                </Link>
+              ))}
             </div>
           </div>
         </div>

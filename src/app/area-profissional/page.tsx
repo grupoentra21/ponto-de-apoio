@@ -172,9 +172,11 @@ export default async function ProfessionalArea({
         <p>
           Status:{' '}
           <span className="subscription-status-value">
-            {subscriptionStatusLabel[
-              (subscription?.status ?? 'inactive') as SubscriptionStatus
-            ]}
+            {
+              subscriptionStatusLabel[
+                (subscription?.status ?? 'inactive') as SubscriptionStatus
+              ]
+            }
           </span>
         </p>
       </div>
@@ -283,12 +285,19 @@ export default async function ProfessionalArea({
           Apresentação profissional
           <textarea
             name="bio"
+            aria-describedby="professional-hashtags-help"
             rows={7}
             maxLength={3000}
             defaultValue={professional?.bio ?? ''}
             disabled={locked}
           />
         </label>
+        <p id="professional-hashtags-help" className="muted">
+          Para destacar seus temas de atendimento, inclua até 12 hashtags na
+          apresentação, como #Luto, #Ansiedade ou #TerapiaDeCasal. Use até 40
+          caracteres por hashtag, sem espaços. Elas aparecerão no catálogo e
+          poderão ser usadas como filtros.
+        </p>
         {!locked && <ProfessionalSaveButton />}
       </form>
       <div className="surface professional-form verification-surface">
