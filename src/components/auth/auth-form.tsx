@@ -13,11 +13,21 @@ type Props = {
 
 function SubmitButton({ signup }: { signup: boolean }) {
   const { pending } = useFormStatus();
-  const loginPending = !signup && pending;
 
   return (
-    <button className="button" type="submit" disabled={loginPending}>
-      {loginPending ? 'Entrando...' : signup ? 'Criar acesso' : 'Entrar'}
+    <button
+      className="button"
+      type="submit"
+      disabled={pending}
+      aria-busy={pending}
+    >
+      {pending
+        ? signup
+          ? 'Carregando...'
+          : 'Entrando...'
+        : signup
+          ? 'Criar acesso'
+          : 'Entrar'}
     </button>
   );
 }
