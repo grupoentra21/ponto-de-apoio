@@ -800,7 +800,7 @@ td {
 }
 .catalog-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(310px, 100%), 1fr));
   gap: 1.25rem;
   margin-top: 2rem;
 }
@@ -815,7 +815,7 @@ td {
 }
 .catalog-filter-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
   gap: 1rem;
   align-items: end;
   margin-top: 1rem;
@@ -838,8 +838,134 @@ td {
   padding: 1.5rem;
 }
 .professional-card h2 {
-  font-family: Georgia, serif;
-  margin-bottom: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: clamp(1.35rem, 2vw, 1.65rem);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+  margin: 0.3rem 0 0.45rem;
+}
+.professional-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-width: 0;
+}
+.professional-card-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+.professional-card-heading .avatar {
+  width: 68px;
+  height: 68px;
+  flex-shrink: 0;
+  border: 3px solid white;
+  box-shadow: 0 0 0 1px #dce5df;
+}
+.professional-card-identity {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.professional-card-role {
+  color: var(--green);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 0;
+}
+.professional-card-registration {
+  color: var(--muted);
+  font-size: 0.8rem;
+  margin: 0;
+}
+.professional-card h2 a:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.professional-card-facts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 0;
+  padding: 14px;
+  background: #edf3ed;
+  border-radius: 14px;
+}
+.professional-card-facts dt {
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.professional-card-facts dd {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.professional-card-about h3 {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.professional-card-bio {
+  margin: 0;
+  font-size: 0.93rem;
+  line-height: 1.65;
+  color: var(--muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.professional-card .professional-card-actions {
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid #dce5df;
+}
+.professional-card-actions .button {
+  flex: 1;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+.professional-card :is(a, button):focus-visible {
+  outline: 3px solid var(--green);
+  outline-offset: 4px;
+}
+.professional-hashtags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.professional-hashtag {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 11px;
+  min-height: 36px;
+  max-width: 100%;
+  border: 1px solid #b8c9c2;
+  border-radius: 999px;
+  background: #e7efe8;
+  color: var(--green);
+  font-size: 0.8rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+.professional-hashtag:hover,
+.professional-hashtag[aria-pressed='true'] {
+  background: var(--green);
+  color: white;
+  border-color: var(--green);
+}
+.catalog-active-tag {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
 }
 
 .professional-card-actions {
