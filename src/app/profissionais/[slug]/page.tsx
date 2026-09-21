@@ -121,6 +121,7 @@ export default async function ProfessionalProfilePage({
 
       <article className="surface professional-profile">
         <div className="professional-profile-heading">
+          <h1>{professional.name}</h1>
           <div
             className={`avatar professional-profile-avatar ${professional.avatarUrl ? 'has-photo' : ''}`}
             style={
@@ -144,13 +145,18 @@ export default async function ProfessionalProfilePage({
                 .join('')}
           </div>
           <div className="professional-profile-summary">
-            <p className="eyebrow">Perfil profissional verificado</p>
-            <h1>{professional.name}</h1>
-            <p className="muted">
-              Psicólogo(a) · {professional.registrationRegion}{' '}
-              {professional.registrationNumber}
+            <p>
+              <strong>
+                Psicólogo(a) · CRP{' '}
+                {professional.registrationRegion.replace(/^CRP\s*/i, '')}{' '}
+                {professional.registrationNumber}
+              </strong>
             </p>
             <div className="professional-profile-details">
+              <p>
+                <strong>Especialidade:</strong> não informada. Consulte a
+                apresentação abaixo.
+              </p>
               <p>
                 <strong>Modalidade:</strong> {serviceMode}
               </p>
@@ -186,6 +192,22 @@ export default async function ProfessionalProfilePage({
             <p>{professional.bio}</p>
           </div>
         )}
+
+        <div className="professional-profile-contacts">
+          {professional.contactEmail && (
+            <p>
+              <strong>E-mail:</strong>{' '}
+              <a href={`mailto:${professional.contactEmail}`}>
+                {professional.contactEmail}
+              </a>
+            </p>
+          )}
+          {professional.phoneNumber && (
+            <p>
+              <strong>Telefone:</strong> {professional.phoneNumber}
+            </p>
+          )}
+        </div>
 
         {(professional.contactEmail || whatsAppUrl) && (
           <div className="professional-profile-contact-actions">
