@@ -6,7 +6,14 @@ import {
   IMMEDIATE_RISK_RESPONSE,
 } from '@/ai/alice-safety';
 import { parseSearchArguments, PROFESSIONAL_SEARCH_TOOL } from '@/ai/tools';
-import { searchProfessionals } from '@/services/professional-search';
+import {
+  searchProfessionals,
+  getChatProfessionals,
+} from '@/services/professional-search';
+import {
+  professionalIdPattern,
+  type ChatRecommendation,
+} from '@/lib/chat-recommendations';
 
 type ChatMessage = {
   role: 'user' | 'assistant';
@@ -76,6 +83,7 @@ export async function POST(request: Request) {
     });
 
     for (let round = 0; round < 2; round += 1) {
+      const recommendations: ChatRecommendation[] = [];
       const calls = response.output.filter(
         (item) => item.type === 'function_call',
       );
@@ -89,6 +97,18 @@ export async function POST(request: Request) {
           const result = await searchProfessionals(
             parseSearchArguments(call.arguments),
           );
+          for (const professional of result.professionals) {
+            if (
+              !recommendations.some((item) => item.id === professional.id) &&
+              recommendations.length < 8
+            ) {
+              recommendations.push({
+                id: professional.id,
+                name: professional.name,
+                reason: professional.reason,
+              });
+            }
+          }
           return {
             type: 'function_call_output' as const,
             call_id: call.call_id,
@@ -96,6 +116,14 @@ export async function POST(request: Request) {
           };
         }),
       );
+
+      if (recommendations.length) {
+        return NextResponse.json({
+          message:
+            'Encontrei estas opções a partir dos critérios informados. Nos cartões, você pode conhecer a apresentação de cada profissional e entender a relação com sua busca. A compatibilidade se baseia nas informações públicas e não representa avaliação de qualidade, indicação clínica ou garantia de adequação.',
+          recommendations,
+        });
+      }
 
       response = await openai.responses.create({
         model: 'gpt-5.4',
@@ -118,6 +146,32 @@ export async function POST(request: Request) {
     return NextResponse.json(
       { error: 'Não foi possível responder agora. Tente novamente.' },
       { status: 500 },
+    );
+  }
+}
+
+export async function GET(request: Request) {
+  const ids = [
+    ...new Set(
+      new URL(request.url).searchParams.get('professionals')?.split(',') ?? [],
+    ),
+  ];
+  if (
+    !ids.length ||
+    ids.length > 8 ||
+    !ids.every((id) => professionalIdPattern.test(id))
+  ) {
+    return NextResponse.json({ error: 'Perfis inválidos.' }, { status: 400 });
+  }
+  try {
+    return NextResponse.json(
+      { professionals: await getChatProfessionals(ids) },
+      { headers: { 'Cache-Control': 'no-store' } },
+    );
+  } catch {
+    return NextResponse.json(
+      { error: 'Não foi possível carregar os perfis. Tente novamente.' },
+      { status: 503 },
     );
   }
 }

@@ -3,10 +3,16 @@
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { splitProfessionalProfileLinks } from '@/lib/chat-professional-links';
+import {
+  isChatRecommendations,
+  type ChatRecommendation,
+} from '@/lib/chat-recommendations';
+import { ProfessionalRecommendations } from './professional-recommendations';
 
 type Message = {
   role: 'user' | 'assistant';
   content: string;
+  recommendations?: ChatRecommendation[];
 };
 
 const initialMessage: Message = {
@@ -28,11 +34,16 @@ function isMessageHistory(value: unknown): value is Message[] {
       const keys = Object.keys(record);
 
       return (
-        keys.length === 2 &&
+        keys.every((key) =>
+          ['role', 'content', 'recommendations'].includes(key),
+        ) &&
         keys.includes('role') &&
         keys.includes('content') &&
         (record.role === 'user' || record.role === 'assistant') &&
-        typeof record.content === 'string'
+        typeof record.content === 'string' &&
+        (record.recommendations === undefined ||
+          (record.role === 'assistant' &&
+            isChatRecommendations(record.recommendations)))
       );
     })
   );
@@ -48,6 +59,7 @@ export function ChatDemo({ className = '' }: { className?: string }) {
   const chatRef = useRef<HTMLDivElement>(null);
   const fullscreenButtonRef = useRef<HTMLButtonElement>(null);
   const messagesRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const skipNextStorageSave = useRef(false);
 
   useEffect(() => {
@@ -73,6 +85,7 @@ export function ChatDemo({ className = '' }: { className?: string }) {
     fullscreenButton?.focus({ preventScroll: true });
 
     function handleKeyDown(event: KeyboardEvent) {
+      if (chat.querySelector('dialog[open]')) return;
       if (event.key === 'Escape') {
         event.preventDefault();
         setIsFullscreen(false);
@@ -188,12 +201,20 @@ export function ChatDemo({ className = '' }: { className?: string }) {
     setMessage('');
     setError('');
     setIsLoading(true);
+    inputRef.current?.focus({ preventScroll: true });
 
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: nextMessages }),
+        body: JSON.stringify({
+          messages: nextMessages.map(({ role, content, recommendations }) => ({
+            role,
+            content: recommendations?.length
+              ? `${content}\nProfissionais apresentados: ${recommendations.map((item) => item.name).join(', ')}.`
+              : content,
+          })),
+        }),
       });
       const data: unknown = await response.json();
 
@@ -220,6 +241,15 @@ export function ChatDemo({ className = '' }: { className?: string }) {
         {
           role: 'assistant',
           content: (data as Record<string, string>).message,
+          ...(isChatRecommendations(
+            (data as Record<string, unknown>).recommendations,
+          )
+            ? {
+                recommendations: (
+                  data as { recommendations: ChatRecommendation[] }
+                ).recommendations,
+              }
+            : {}),
         },
       ]);
     } catch (submitError) {
@@ -343,9 +373,19 @@ export function ChatDemo({ className = '' }: { className?: string }) {
         {messages.map((item, index) => (
           <div
             key={`${item.role}-${index}`}
+            className={
+              item.recommendations?.length
+                ? 'chat-recommendation-message'
+                : undefined
+            }
             style={{
+              flexShrink: 0,
               alignSelf: item.role === 'user' ? 'flex-end' : 'flex-start',
-              maxWidth: item.role === 'user' ? 540 : 620,
+              maxWidth: item.recommendations?.length
+                ? '100%'
+                : item.role === 'user'
+                  ? 540
+                  : 620,
               padding: '1rem 1.2rem',
               borderRadius:
                 item.role === 'user'
@@ -376,6 +416,11 @@ export function ChatDemo({ className = '' }: { className?: string }) {
                     ),
                 )
               : item.content}
+            {!!item.recommendations?.length && (
+              <ProfessionalRecommendations
+                recommendations={item.recommendations}
+              />
+            )}
           </div>
         ))}
         {isLoading && (
@@ -396,6 +441,7 @@ export function ChatDemo({ className = '' }: { className?: string }) {
         </label>
         <div style={{ display: 'flex', gap: 10, alignItems: 'end' }}>
           <textarea
+            ref={inputRef}
             id="message"
             value={message}
             onChange={(event) => setMessage(event.target.value)}
@@ -411,7 +457,7 @@ export function ChatDemo({ className = '' }: { className?: string }) {
               if (isLoading || !message.trim()) return;
               event.currentTarget.form?.requestSubmit();
             }}
-            disabled={isLoading}
+            aria-busy={isLoading}
             rows={2}
             placeholder="Escreva no seu ritmo…"
             style={{
