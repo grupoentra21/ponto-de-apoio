@@ -6,6 +6,7 @@ import {
 import type { ProfessionalSearchArguments } from '@/ai/tools';
 import { createClient as createSupabaseClient } from '@/lib/supabase/server';
 import { professionalProfilePath } from '@/lib/professional-public-profile';
+import type { ChatProfessional } from '@/lib/chat-recommendations';
 
 type PublicProfessional = {
   id: string;
@@ -57,6 +58,11 @@ export async function searchProfessionals(args: ProfessionalSearchArguments) {
     .map(({ professional }) => {
       const name = professional.profiles?.full_name ?? 'Profissional';
       return {
+        id: professional.id,
+        reason:
+          args.context && relevanceScore(args.context, professional.bio) > 0
+            ? `A apresentação pública menciona temas relacionados a “${args.context}”. Confirme com o profissional se sua atuação atende ao que você procura.`
+            : 'Este perfil aparece entre as opções disponíveis para sua busca. Não foi identificada uma correspondência específica com o tema; confirme a área de atuação com o profissional.',
         name,
         crp: `${professional.registration_region} ${professional.registration_number}`,
         bio: professional.bio,
@@ -75,4 +81,45 @@ export async function searchProfessionals(args: ProfessionalSearchArguments) {
       : 'Rotação diária neutra; a ordem não representa qualidade ou recomendação clínica.',
     professionals,
   };
+}
+
+export async function getChatProfessionals(
+  ids: string[],
+): Promise<ChatProfessional[]> {
+  const supabase = await createSupabaseClient();
+  const { data, error } = await supabase
+    .from('professionals')
+    .select(
+      'id,registration_number,registration_region,bio,service_mode,city,state,contact_email,phone_number,avatar_path,profiles!professionals_profile_id_fkey(full_name)',
+    )
+    .in('id', ids)
+    .eq('status', 'approved')
+    .eq('is_published', true);
+  if (error) throw new Error('Não foi possível consultar os perfis públicos.');
+  return Promise.all(
+    (data ?? []).map(async (row) => {
+      const professional = row as unknown as PublicProfessional & {
+        contact_email: string | null;
+        phone_number: string | null;
+        avatar_path: string | null;
+      };
+      const avatar = professional.avatar_path
+        ? await supabase.storage
+            .from('professional-avatars')
+            .createSignedUrl(professional.avatar_path, 3600)
+        : null;
+      return {
+        id: professional.id,
+        name: professional.profiles?.full_name ?? 'Profissional',
+        crp: `${professional.registration_region} ${professional.registration_number}`,
+        bio: professional.bio,
+        serviceMode: professional.service_mode,
+        city: professional.city,
+        state: professional.state,
+        contactEmail: professional.contact_email,
+        phoneNumber: professional.phone_number,
+        avatarUrl: avatar?.data?.signedUrl ?? null,
+      };
+    }),
+  );
 }
