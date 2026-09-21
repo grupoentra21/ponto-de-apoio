@@ -4,6 +4,10 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { professionalProfilePath } from '@/lib/professional-public-profile';
+import {
+  professionalHashtags,
+  normalizeHashtag,
+} from '@/lib/professional-hashtags';
 
 export type CatalogProfessional = {
   id: string;
@@ -97,6 +101,18 @@ export function ProfessionalCatalog({
     [professionals],
   );
   const initialModality = searchParams.get('modalidade');
+  const [hashtag, setHashtag] = useState(
+    normalizeHashtag(searchParams.get('hashtag') ?? ''),
+  );
+  const hashtags = useMemo(
+    () =>
+      uniqueOptions(
+        professionals.flatMap((professional) =>
+          professionalHashtags(professional.bio),
+        ),
+      ),
+    [professionals],
+  );
   const initialState = searchParams.get('estado')?.toUpperCase() ?? '';
   const [query, setQuery] = useState(searchParams.get('q')?.trim() ?? '');
   const [debouncedQuery, setDebouncedQuery] = useState(query);
@@ -140,12 +156,22 @@ export function ProfessionalCatalog({
     if (modality) params.set('modalidade', modality);
     if (state) params.set('estado', state);
     if (city) params.set('cidade', city);
+    if (hashtag) params.set('hashtag', hashtag);
     const nextUrl = params.size ? `${pathname}?${params}` : pathname;
     const currentUrl = searchParams.size
       ? `${pathname}?${searchParams.toString()}`
       : pathname;
     if (nextUrl !== currentUrl) router.replace(nextUrl, { scroll: false });
-  }, [city, debouncedQuery, modality, pathname, router, searchParams, state]);
+  }, [
+    city,
+    debouncedQuery,
+    hashtag,
+    modality,
+    pathname,
+    router,
+    searchParams,
+    state,
+  ]);
 
   const filteredProfessionals = useMemo(() => {
     const normalizedQuery = normalize(query);
@@ -167,9 +193,20 @@ export function ProfessionalCatalog({
         !state || normalize(professional.state ?? '') === normalize(state);
       const matchesCity =
         !city || normalize(professional.city ?? '') === normalize(city);
-      return matchesQuery && matchesModality && matchesState && matchesCity;
+      const matchesHashtag =
+        !hashtag ||
+        professionalHashtags(professional.bio).some(
+          (tag) => normalizeHashtag(tag) === hashtag,
+        );
+      return (
+        matchesQuery &&
+        matchesModality &&
+        matchesState &&
+        matchesCity &&
+        matchesHashtag
+      );
     });
-  }, [city, modality, professionals, query, state]);
+  }, [city, hashtag, modality, professionals, query, state]);
 
   const clearFilters = () => {
     setQuery('');
@@ -177,6 +214,7 @@ export function ProfessionalCatalog({
     setModality('');
     setState('');
     setCity('');
+    setHashtag('');
   };
 
   return (
@@ -234,6 +272,27 @@ export function ProfessionalCatalog({
               ))}
             </select>
           </label>
+          <label>
+            Hashtag
+            <select
+              value={hashtag}
+              onChange={(event) => setHashtag(event.target.value)}
+            >
+              <option value="">Todas</option>
+              {hashtag &&
+                !hashtags.some((tag) => normalizeHashtag(tag) === hashtag) && (
+                  <option value={hashtag}>#{hashtag}</option>
+                )}
+              {hashtags.map((tag) => (
+                <option
+                  key={normalizeHashtag(tag)}
+                  value={normalizeHashtag(tag)}
+                >
+                  #{tag}
+                </option>
+              ))}
+            </select>
+          </label>
           <button
             className="button secondary catalog-clear"
             type="button"
@@ -249,6 +308,21 @@ export function ProfessionalCatalog({
           ? 'profissional encontrado'
           : 'profissionais encontrados'}
       </p>
+      {hashtag && (
+        <div className="catalog-active-tag">
+          <span>
+            Filtrando por <strong>#{hashtag}</strong>
+          </span>
+          <button
+            className="professional-hashtag"
+            type="button"
+            onClick={() => setHashtag('')}
+            aria-label="Remover filtro de hashtag"
+          >
+            Remover filtro ×
+          </button>
+        </div>
+      )}
       {filteredProfessionals.length === 0 ? (
         <div className="surface empty-state catalog-no-results">
           <h2>Nenhum profissional encontrado com esses critérios.</h2>
@@ -267,44 +341,95 @@ export function ProfessionalCatalog({
               className="surface professional-card"
               key={professional.id}
             >
-              <div
-                className={`avatar ${professional.avatar_url ? 'has-photo' : ''}`}
-                style={
-                  professional.avatar_url
-                    ? { backgroundImage: `url("${professional.avatar_url}")` }
-                    : undefined
-                }
-                role={professional.avatar_url ? 'img' : undefined}
-                aria-label={
-                  professional.avatar_url
-                    ? `Foto de ${professional.name}`
-                    : undefined
-                }
-                aria-hidden={professional.avatar_url ? undefined : true}
-              >
-                {!professional.avatar_url &&
-                  professional.name
-                    .split(' ')
-                    .slice(0, 2)
-                    .map((name) => name[0])
-                    .join('')}
+              <header className="professional-card-heading">
+                <div
+                  className={`avatar ${professional.avatar_url ? 'has-photo' : ''}`}
+                  style={
+                    professional.avatar_url
+                      ? { backgroundImage: `url("${professional.avatar_url}")` }
+                      : undefined
+                  }
+                  role={professional.avatar_url ? 'img' : undefined}
+                  aria-label={
+                    professional.avatar_url
+                      ? `Foto de ${professional.name}`
+                      : undefined
+                  }
+                  aria-hidden={professional.avatar_url ? undefined : true}
+                >
+                  {!professional.avatar_url &&
+                    professional.name
+                      .split(' ')
+                      .slice(0, 2)
+                      .map((name) => name[0])
+                      .join('')}
+                </div>
+                <div className="professional-card-identity">
+                  <p className="professional-card-role">Psicólogo(a)</p>
+                  <h2>
+                    <Link
+                      href={`${professionalProfilePath(professional.name, professional.id)}?from=${encodeURIComponent(catalogReturnPath)}`}
+                    >
+                      {professional.name}
+                    </Link>
+                  </h2>
+                  <p className="professional-card-registration">
+                    CRP {professional.registration_region}{' '}
+                    {professional.registration_number}
+                  </p>
+                </div>
+              </header>
+              <dl className="professional-card-facts">
+                <div>
+                  <dt>Atendimento</dt>
+                  <dd>
+                    {professional.service_mode === 'online'
+                      ? 'Online'
+                      : professional.service_mode === 'in_person'
+                        ? 'Presencial'
+                        : 'Online e presencial'}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Localização</dt>
+                  <dd>
+                    {[professional.city, professional.state]
+                      .filter(Boolean)
+                      .join('/') || 'Não informada'}
+                  </dd>
+                </div>
+              </dl>
+              {professionalHashtags(professional.bio).length > 0 && (
+                <div
+                  className="professional-hashtags"
+                  aria-label={`Hashtags de ${professional.name}`}
+                >
+                  {professionalHashtags(professional.bio).map((tag) => (
+                    <button
+                      className="professional-hashtag"
+                      type="button"
+                      key={normalizeHashtag(tag)}
+                      aria-pressed={hashtag === normalizeHashtag(tag)}
+                      onClick={() =>
+                        setHashtag((current) =>
+                          current === normalizeHashtag(tag)
+                            ? ''
+                            : normalizeHashtag(tag),
+                        )
+                      }
+                    >
+                      #{tag}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <div className="professional-card-about">
+                <h3>Sobre o atendimento</h3>
+                <p className="professional-card-bio">
+                  {professional.bio ||
+                    'Conheça mais sobre o atendimento no perfil profissional.'}
+                </p>
               </div>
-              <h2>{professional.name}</h2>
-              <p className="muted">
-                Psicólogo(a) · {professional.registration_region}{' '}
-                {professional.registration_number}
-              </p>
-              <p>{professional.bio}</p>
-              <p className="muted">
-                {professional.service_mode === 'online'
-                  ? 'Online'
-                  : professional.service_mode === 'in_person'
-                    ? 'Presencial'
-                    : 'Online e presencial'}
-                {professional.city
-                  ? ` · ${professional.city}/${professional.state}`
-                  : ''}
-              </p>
               <div className="professional-card-actions">
                 <ProfessionalWhatsAppLink
                   phoneNumber={professional.phone_number}
