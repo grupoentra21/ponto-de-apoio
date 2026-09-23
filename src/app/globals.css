@@ -815,7 +815,7 @@ td {
 }
 .catalog-filter-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
   gap: 1rem;
   align-items: end;
   margin-top: 1rem;

@@ -272,7 +272,7 @@ export function ProfessionalCatalog({
               ))}
             </select>
           </label>
-          <label>
+          <label hidden>
             Hashtag
             <select
               value={hashtag}
