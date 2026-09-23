@@ -342,13 +342,6 @@ export function ProfessionalCatalog({
               key={professional.id}
             >
               <header className="professional-card-heading">
-                <h2>
-                  <Link
-                    href={`${professionalProfilePath(professional.name, professional.id)}?from=${encodeURIComponent(catalogReturnPath)}`}
-                  >
-                    {professional.name}
-                  </Link>
-                </h2>
                 <div
                   className={`avatar ${professional.avatar_url ? 'has-photo' : ''}`}
                   style={
@@ -371,6 +364,13 @@ export function ProfessionalCatalog({
                       .map((name) => name[0])
                       .join('')}
                 </div>
+                <h2>
+                  <Link
+                    href={`${professionalProfilePath(professional.name, professional.id)}?from=${encodeURIComponent(catalogReturnPath)}`}
+                  >
+                    {professional.name}
+                  </Link>
+                </h2>
                 <div className="professional-card-identity">
                   <p className="professional-card-registration">
                     Psicólogo(a) · CRP{' '}
