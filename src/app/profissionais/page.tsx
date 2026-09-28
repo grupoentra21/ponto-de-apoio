@@ -20,7 +20,7 @@ export default async function ProfissionaisPage() {
     const { data, error } = await supabase
       .from('professionals')
       .select(
-        'id,profile_id,registration_number,registration_region,specialty,bio,service_mode,city,state,contact_email,phone_number,avatar_path',
+        'id,profile_id,registration_number,registration_region,bio,service_mode,city,state,contact_email,phone_number,avatar_path',
       )
       .eq('status', 'approved')
       .eq('is_published', true)
@@ -92,7 +92,6 @@ export default async function ProfissionaisPage() {
             name: profileNames.get(professional.profile_id) ?? 'Profissional',
             registration_number: professional.registration_number,
             registration_region: professional.registration_region,
-            specialty: professional.specialty,
             bio: professional.bio,
             service_mode: professional.service_mode,
             city: professional.city,

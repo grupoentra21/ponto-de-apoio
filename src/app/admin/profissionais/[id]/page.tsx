@@ -13,7 +13,6 @@ type ProfessionalDetails = {
   id: string;
   registration_number: string;
   registration_region: string;
-  specialty: string | null;
   service_mode: ServiceMode;
   city: string | null;
   state: string | null;
@@ -66,7 +65,7 @@ export default async function AdminProfessionalDetailsPage({
   const { data } = await supabase
     .from('professionals')
     .select(
-      'id,registration_number,registration_region,specialty,service_mode,city,state,contact_email,bio,avatar_path,status,is_published,created_at,profiles!professionals_profile_id_fkey(full_name)',
+      'id,registration_number,registration_region,service_mode,city,state,contact_email,bio,avatar_path,status,is_published,created_at,profiles!professionals_profile_id_fkey(full_name)',
     )
     .eq('id', id)
     .maybeSingle();
@@ -161,10 +160,6 @@ export default async function AdminProfessionalDetailsPage({
             <dd>{serviceModeLabels[professional.service_mode]}</dd>
           </div>
           <div>
-            <dt>Especialidade</dt>
-            <dd>{professional.specialty || 'Não informada'}</dd>
-          </div>
-          <div>
             <dt>Cidade</dt>
             <dd>{professional.city || 'Não informada'}</dd>
           </div>
@@ -198,11 +193,9 @@ export default async function AdminProfessionalDetailsPage({
               <span
                 className={`status-badge status-subscription-${subscription?.status ?? 'inactive'}`}
               >
-                {
-                  subscriptionStatusLabels[
-                    (subscription?.status ?? 'inactive') as SubscriptionStatus
-                  ]
-                }
+                {subscriptionStatusLabels[
+                  (subscription?.status ?? 'inactive') as SubscriptionStatus
+                ]}
               </span>
             </dd>
           </div>
