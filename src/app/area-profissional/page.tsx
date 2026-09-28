@@ -239,6 +239,17 @@ export default async function ProfessionalArea({
             </select>
           </label>
           <label>
+            Especialidade
+            <input
+              name="specialty"
+              minLength={2}
+              maxLength={120}
+              placeholder="Ex.: Psicologia clínica e ansiedade"
+              defaultValue={professional?.specialty ?? ''}
+              disabled={locked}
+            />
+          </label>
+          <label>
             Cidade
             <input
               name="city"
