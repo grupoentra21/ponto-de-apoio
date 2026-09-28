@@ -14,6 +14,7 @@ export type CatalogProfessional = {
   name: string;
   registration_number: string;
   registration_region: string;
+  specialty: string | null;
   bio: string | null;
   service_mode: 'online' | 'in_person' | 'hybrid';
   city: string | null;
@@ -180,6 +181,7 @@ export function ProfessionalCatalog({
         !normalizedQuery ||
         [
           professional.name,
+          professional.specialty ?? '',
           professional.bio ?? '',
           professional.city ?? '',
           professional.state ?? '',
@@ -382,7 +384,10 @@ export function ProfessionalCatalog({
               <dl className="professional-card-facts">
                 <div>
                   <dt>Especialidade:</dt>{' '}
-                  <dd>não informada. Consulte a apresentação abaixo.</dd>
+                  <dd>
+                    {professional.specialty ??
+                      'Não informada. Consulte a apresentação abaixo.'}
+                  </dd>
                 </div>
                 <div>
                   <dt>Modalidade:</dt>{' '}
