@@ -12,6 +12,7 @@ type PublicProfessional = {
   id: string;
   registration_number: string;
   registration_region: string;
+  specialty: string | null;
   bio: string | null;
   service_mode: 'online' | 'in_person' | 'hybrid';
   city: string | null;
@@ -24,7 +25,7 @@ export async function searchProfessionals(args: ProfessionalSearchArguments) {
   let query = supabase
     .from('professionals')
     .select(
-      'id,registration_number,registration_region,bio,service_mode,city,state,profiles!professionals_profile_id_fkey(full_name)',
+      'id,registration_number,registration_region,specialty,bio,service_mode,city,state,profiles!professionals_profile_id_fkey(full_name)',
     )
     .eq('status', 'approved')
     .eq('is_published', true)
@@ -42,9 +43,14 @@ export async function searchProfessionals(args: ProfessionalSearchArguments) {
   const rows = (data ?? []) as unknown as PublicProfessional[];
   const neutralKey = (professional: PublicProfessional) =>
     createHash('sha256').update(`${day}:${professional.id}`).digest('hex');
+  const searchText = (professional: PublicProfessional) =>
+    [professional.specialty, professional.bio].filter(Boolean).join(' ') ||
+    null;
   const scored = rows.map((professional) => ({
     professional,
-    score: args.context ? relevanceScore(args.context, professional.bio) : 0,
+    score: args.context
+      ? relevanceScore(args.context, searchText(professional))
+      : 0,
   }));
   const hasRelevantMatches = scored.some(({ score }) => score > 0);
   const professionals = scored
@@ -60,11 +66,13 @@ export async function searchProfessionals(args: ProfessionalSearchArguments) {
       return {
         id: professional.id,
         reason:
-          args.context && relevanceScore(args.context, professional.bio) > 0
-            ? `A apresentação pública menciona temas relacionados a “${args.context}”. Confirme com o profissional se sua atuação atende ao que você procura.`
+          args.context &&
+          relevanceScore(args.context, searchText(professional)) > 0
+            ? `As informações públicas do perfil mencionam temas relacionados a “${args.context}”. Confirme com o profissional se sua atuação atende ao que você procura.`
             : 'Este perfil aparece entre as opções disponíveis para sua busca. Não foi identificada uma correspondência específica com o tema; confirme a área de atuação com o profissional.',
         name,
         crp: `${professional.registration_region} ${professional.registration_number}`,
+        specialty: professional.specialty,
         bio: professional.bio,
         service_mode: professional.service_mode,
         city: professional.city,
@@ -90,7 +98,7 @@ export async function getChatProfessionals(
   const { data, error } = await supabase
     .from('professionals')
     .select(
-      'id,registration_number,registration_region,bio,service_mode,city,state,contact_email,phone_number,avatar_path,profiles!professionals_profile_id_fkey(full_name)',
+      'id,registration_number,registration_region,specialty,bio,service_mode,city,state,contact_email,phone_number,avatar_path,profiles!professionals_profile_id_fkey(full_name)',
     )
     .in('id', ids)
     .eq('status', 'approved')
@@ -112,6 +120,7 @@ export async function getChatProfessionals(
         id: professional.id,
         name: professional.profiles?.full_name ?? 'Profissional',
         crp: `${professional.registration_region} ${professional.registration_number}`,
+        specialty: professional.specialty,
         bio: professional.bio,
         serviceMode: professional.service_mode,
         city: professional.city,
