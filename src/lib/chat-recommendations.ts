@@ -4,7 +4,6 @@ export type ChatProfessional = {
   id: string;
   name: string;
   crp: string;
-  specialty: string | null;
   bio: string | null;
   serviceMode: 'online' | 'in_person' | 'hybrid';
   city: string | null;

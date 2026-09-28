@@ -90,7 +90,6 @@ export async function saveProfessional(form: FormData) {
   const { supabase, user } = await requireUser();
   const fullName = normalizeProfessionalFullName(value(form, 'fullName'));
   const registrationNumber = value(form, 'registrationNumber');
-  const specialty = value(form, 'specialty') || null;
   const phoneDigits = value(form, 'phoneNumber').replace(/\D/g, '');
   const phoneNumber =
     phoneDigits.length === 0
@@ -110,10 +109,6 @@ export async function saveProfessional(form: FormData) {
     );
   if (phoneNumber === undefined)
     redirect('/area-profissional?erro=Informe um celular válido com DDD.');
-  if (specialty && (specialty.length < 2 || specialty.length > 120))
-    redirect(
-      '/area-profissional?erro=Informe uma especialidade de 2 a 120 caracteres.',
-    );
   if (
     !/^\d+$/.test(registrationNumber) ||
     !/^CRP\s*\d{2}$/i.test(region) ||
@@ -125,7 +120,6 @@ export async function saveProfessional(form: FormData) {
     p_full_name: fullName,
     p_registration_number: registrationNumber,
     p_registration_region: region.replace(/\s+/g, ' '),
-    p_specialty: specialty,
     p_bio: value(form, 'bio') || null,
     p_service_mode: mode,
     p_city: value(form, 'city') || null,
