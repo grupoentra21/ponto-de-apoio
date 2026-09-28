@@ -324,13 +324,11 @@ export function ChatDemo({ className = '' }: { className?: string }) {
           </button>
           <button
             ref={fullscreenButtonRef}
-            className="button secondary chat-fullscreen-button"
+            className="button chat-fullscreen-button"
             type="button"
             onClick={() => setIsFullscreen((current) => !current)}
             aria-expanded={isFullscreen}
-            aria-label={
-              isFullscreen ? 'Sair da tela cheia' : 'Abrir chat em tela cheia'
-            }
+            aria-label={isFullscreen ? 'Reduzir tela' : 'Ampliar tela'}
             title={
               isFullscreen
                 ? 'Sair da tela cheia (Esc)'
@@ -339,12 +337,12 @@ export function ChatDemo({ className = '' }: { className?: string }) {
           >
             <svg
               aria-hidden="true"
-              width="20"
-              height="20"
+              width="24"
+              height="24"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="2"
+              strokeWidth="2.5"
               strokeLinecap="round"
               strokeLinejoin="round"
             >
@@ -356,6 +354,7 @@ export function ChatDemo({ className = '' }: { className?: string }) {
                 }
               />
             </svg>
+            <span>{isFullscreen ? 'Reduzir tela' : 'Ampliar tela'}</span>
           </button>
         </div>
       </div>
