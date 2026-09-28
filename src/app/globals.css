@@ -1327,9 +1327,20 @@ td {
     text-align: left;
   }
 
-  .chat-shell,
-  .home-chat {
-    height: min(700px, calc(100dvh - 88px));
+  .chat-shell:not(.is-fullscreen),
+  .home-chat:not(.is-fullscreen) {
+    height: auto;
+    overflow: visible;
+  }
+
+  .chat-shell:not(.is-fullscreen) .chat-messages {
+    flex: 0 0 auto;
+    min-height: clamp(260px, 44dvh, 420px);
+    max-height: 420px;
+  }
+
+  .home-hero {
+    overflow: visible;
   }
 
   .chat-shell.is-fullscreen {
