@@ -1,11 +1,12 @@
 import Link from 'next/link';
 import { ChatDemo } from '@/components/chat/chat-demo';
+import styles from './home-mobile.module.css';
 
 export default function Home() {
   return (
     <>
       <section className="home-hero">
-        <div className="container home-hero-grid">
+        <div className={`container home-hero-grid ${styles.heroGrid}`}>
           <div className="home-hero-copy">
             <p className="eyebrow">
               Você não precisa encontrar o caminho sozinho
@@ -22,7 +23,7 @@ export default function Home() {
               profissionais de saúde mental em um ambiente humano e respeitoso.
             </p>
             <div
-              className="home-hero-professionals-action max-[720px]:hidden"
+              className={`home-hero-professionals-action ${styles.professionalsAction}`}
               style={{
                 display: 'flex',
                 flexWrap: 'wrap',
