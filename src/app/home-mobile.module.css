@@ -1,0 +1,9 @@
+@media (max-width: 900px) {
+  .professionalsAction {
+    display: none;
+  }
+
+  .heroGrid {
+    gap: 1rem;
+  }
+}
