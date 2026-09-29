@@ -18,7 +18,6 @@ type PublicProfessional = {
   id: string;
   registration_number: string;
   registration_region: string;
-  specialty: string | null;
   bio: string | null;
   service_mode: 'online' | 'in_person' | 'hybrid';
   city: string | null;
@@ -39,7 +38,7 @@ const getPublicProfessional = cache(async (slug: string) => {
   const { data, error } = await supabase
     .from('professionals')
     .select(
-      'id,registration_number,registration_region,specialty,bio,service_mode,city,state,contact_email,phone_number,avatar_path,status,is_published,profiles!professionals_profile_id_fkey(full_name)',
+      'id,registration_number,registration_region,bio,service_mode,city,state,contact_email,phone_number,avatar_path,status,is_published,profiles!professionals_profile_id_fkey(full_name)',
     )
     .eq('id', id)
     .eq('status', 'approved')
@@ -62,7 +61,6 @@ const getPublicProfessional = cache(async (slug: string) => {
     name: professional.profiles?.full_name ?? 'Profissional',
     registrationNumber: professional.registration_number,
     registrationRegion: professional.registration_region,
-    specialty: professional.specialty,
     bio: professional.bio,
     serviceMode: professional.service_mode,
     city: professional.city,
@@ -156,9 +154,8 @@ export default async function ProfessionalProfilePage({
             </p>
             <div className="professional-profile-details">
               <p>
-                <strong>Especialidade:</strong>{' '}
-                {professional.specialty ??
-                  'Não informada. Consulte a apresentação abaixo.'}
+                <strong>Especialidade:</strong> não informada. Consulte a
+                apresentação abaixo.
               </p>
               <p>
                 <strong>Modalidade:</strong> {serviceMode}
