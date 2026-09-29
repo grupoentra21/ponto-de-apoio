@@ -21,6 +21,7 @@ export default function Home() {
               profissionais de saúde mental em um ambiente humano e respeitoso.
             </p>
             <div
+              className="home-hero-professionals-action"
               style={{
                 display: 'flex',
                 flexWrap: 'wrap',
