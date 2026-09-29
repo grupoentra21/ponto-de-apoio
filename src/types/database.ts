@@ -4,10 +4,7 @@ export type ProfessionalStatus =
   'draft' | 'pending_review' | 'approved' | 'rejected' | 'suspended';
 export type VerificationDocumentType = 'identity' | 'crp' | 'selfie';
 export type SubscriptionStatus =
-  | 'inactive'
-  | 'active'
-  | 'past_due'
-  | 'canceled';
+  'inactive' | 'active' | 'past_due' | 'canceled';
 export type SubscriptionActivationSource = 'admin' | 'payment';
 export type Profile = {
   id: string;
@@ -22,6 +19,7 @@ export type Professional = {
   professional_type: string;
   registration_number: string;
   registration_region: string;
+  specialty: string | null;
   bio: string | null;
   service_mode: ServiceMode;
   city: string | null;
