@@ -129,9 +129,8 @@ function ProfileDialog({
               <strong>Psicólogo(a) · CRP {professional.crp}</strong>
             </p>
             <p>
-              <strong>Especialidade:</strong>{' '}
-              {professional.specialty ??
-                'Não informada. Consulte a apresentação abaixo.'}
+              <strong>Especialidade:</strong> não informada. Consulte a
+              apresentação abaixo.
             </p>
             <p>
               <strong>Modalidade:</strong>{' '}
@@ -250,8 +249,7 @@ export function ProfessionalRecommendations({
                   {serviceModeLabel(professional.serviceMode)}
                 </p>
                 <p>
-                  <strong>Especialidade:</strong>{' '}
-                  {professional.specialty ?? 'Não informada'}
+                  <strong>Especialidade:</strong> não informada
                 </p>
                 {professional.bio && (
                   <p className="chat-professional-summary">
