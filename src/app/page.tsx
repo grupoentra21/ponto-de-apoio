@@ -1,8 +1,20 @@
 import Link from 'next/link';
 import { ChatDemo } from '@/components/chat/chat-demo';
+
 export default function Home() {
   return (
     <>
+      <style>{`
+        @media (max-width: 720px) {
+          .home-hero-grid {
+            gap: 1rem;
+          }
+
+          .home-hero-professionals-action {
+            display: none;
+          }
+        }
+      `}</style>
       <section className="home-hero">
         <div className="container home-hero-grid">
           <div className="home-hero-copy">
