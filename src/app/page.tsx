@@ -24,12 +24,6 @@ export default function Home() {
             </p>
             <div
               className={`home-hero-professionals-action ${styles.professionalsAction}`}
-              style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: 12,
-                marginTop: 30,
-              }}
             >
               <Link className="button secondary" href="/profissionais">
                 Ver profissionais
